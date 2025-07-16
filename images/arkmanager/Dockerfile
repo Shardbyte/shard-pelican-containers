@@ -40,7 +40,6 @@ RUN dpkg --add-architecture i386 \
         libc6-i386 \
         lib32gcc-s1 \
         lib32stdc++6 \
-        lib32stdc++6:i386 \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
