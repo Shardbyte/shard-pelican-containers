@@ -1,0 +1,9 @@
+version: 2
+# Check for updates to GitHub Actions weekly
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    labels:
+      - github-actions
+    schedule:
+      interval: "weekly"
