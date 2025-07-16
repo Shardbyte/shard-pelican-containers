@@ -46,7 +46,8 @@ RUN dpkg --add-architecture i386 \
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
-RUN useradd -m -d /home/container -s /bin/bash container
+RUN groupadd -g 988 container || true \
+    && useradd -m -d /home/container -s /bin/bash -g container container
 USER container
 WORKDIR /home/container
 
