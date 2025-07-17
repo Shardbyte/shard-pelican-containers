@@ -71,7 +71,8 @@ RUN if [ "${ARK_TOOLS_VERSION}" = "latest" ]; then \
     ln -s /usr/local/bin/arkmanager /usr/bin/arkmanager && \
     rm -rf /tmp/ark-server-tools-* && \
     mkdir -p /etc/arkmanager/instances && \
-    chown -R container:container /etc/arkmanager
+    mkdir -p /var/log/arktools && \
+    chown -R container:container /etc/arkmanager /var/log/arktools
 
 # Copy configuration templates and entrypoint
 COPY --chown=container:container entrypoint.sh /entrypoint.sh

@@ -30,6 +30,10 @@ export ARK_SERVER_ROOT="/home/container/arkserver"
 export STEAMCMD_DIR="/home/container/steamcmd"
 export ARK_CONFIG_DIR="/home/container/conf"
 
+# Set arkmanager environment variables
+export ARKSERVERROOT="${ARK_SERVER_ROOT}"
+export arkserverroot="${ARK_SERVER_ROOT}"
+
 # Debug function
 debug() {
     if [[ "${DEBUG}" == "true" ]]; then
