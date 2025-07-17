@@ -81,6 +81,9 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 COPY --chown=container:container entrypoint.sh /entrypoint.sh
 COPY --chown=container:container conf/ /home/container/conf/
 
+# Make entrypoint executable
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 7777/udp 7778/udp 27015/udp 27020/tcp
 
 ENTRYPOINT ["/usr/bin/tini", "-g", "--"]
