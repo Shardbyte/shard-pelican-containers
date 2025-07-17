@@ -12,10 +12,7 @@ LABEL author="Shardbyte" \
       org.opencontainers.image.title="arkmanager" \
       org.opencontainers.image.licenses="MIT"
 
-ENV LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8 \
-    USER=container \
+ENV USER=container \
     HOME=/home/container
 
 RUN dpkg --add-architecture i386 \
@@ -43,6 +40,10 @@ RUN dpkg --add-architecture i386 \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 RUN groupadd -g 988 container || true \
     && useradd -m -d /home/container -s /bin/bash -g container container
