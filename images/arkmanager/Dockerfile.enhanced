@@ -1,0 +1,100 @@
+#################################################
+# Copyright (c) Shardbyte. All Rights Reserved. #
+# SPDX-License-Identifier: MIT                  #
+#################################################
+#
+FROM debian:bookworm-slim
+
+LABEL author="Shardbyte" \
+      maintainer="containers@shardbyte.com" \
+      org.opencontainers.image.source="https://github.com/Shardbyte/shard-pelican-containers" \
+      org.opencontainers.image.description="Enhanced ARK Manager for Pterodactyl with shard-containers structure" \
+      org.opencontainers.image.title="arkmanager-enhanced" \
+      org.opencontainers.image.licenses="MIT"
+
+# ===============================================================================
+# ENVIRONMENT VARIABLES
+# ===============================================================================
+
+ENV USER=container \
+    HOME=/home/container \
+    ARK_SERVER_VOLUME="/home/container" \
+    ARK_TOOLS_DIR="/home/container/.arkmanager" \
+    TEMPLATE_DIRECTORY="/conf.d" \
+    SESSION_NAME="Pterodactyl ARK Server" \
+    SERVER_MAP="TheIsland" \
+    SERVER_PASSWORD="" \
+    SERVER_PVE="false" \
+    ADMIN_PASSWORD="changeMEplease" \
+    MAX_PLAYERS="20" \
+    GAME_MOD_IDS="" \
+    UPDATE_ON_START="false" \
+    BACKUP_ON_STOP="false" \
+    PRE_UPDATE_BACKUP="true" \
+    WARN_ON_STOP="true" \
+    STEAM_USER="container" \
+    STEAM_LOGIN="anonymous" \
+    BRANCH="master"
+
+# ===============================================================================
+# SYSTEM SETUP
+# ===============================================================================
+
+RUN dpkg --add-architecture i386 \
+    && apt update \
+    && apt -y upgrade \
+    && apt install -y --no-install-recommends \
+        sed \
+        tar \
+        lsof \
+        bzip2 \
+        gzip \
+        curl \
+        wget \
+        cron \
+        rsync \
+        perl \
+        perl-base \
+        perl-modules \
+        locales \
+        coreutils \
+        findutils \
+        libc6-i386 \
+        lib32gcc-s1 \
+        lib32stdc++6 \
+        ca-certificates \
+        procps \
+        jq \
+    && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && apt -y autoremove \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+# ===============================================================================
+# USER SETUP
+# ===============================================================================
+
+RUN groupadd -g 988 container || true \
+    && useradd -m -d /home/container -s /bin/bash -g container container \
+    && mkdir -p "${ARK_TOOLS_DIR}" \
+    && chown -R container:container /home/container
+
+# ===============================================================================
+# CONFIGURATION FILES
+# ===============================================================================
+
+COPY --chown=container:container conf.d/ ${TEMPLATE_DIRECTORY}/
+COPY --chown=container:container entrypoint-enhanced.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+USER container
+WORKDIR /home/container
+
+CMD ["/bin/bash", "/entrypoint.sh"]
