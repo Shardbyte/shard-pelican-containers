@@ -13,6 +13,8 @@ LABEL author="Shardbyte" \
       org.opencontainers.image.licenses="MIT"
 
 ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
     USER=container \
     HOME=/home/container
 
