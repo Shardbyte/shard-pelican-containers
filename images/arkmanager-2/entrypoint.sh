@@ -68,7 +68,6 @@ setup_arkmanager() {
     # Copy configuration files with error checking
     if [[ -f "${ARK_CONFIG_DIR}/arkmanager.cfg" ]]; then
         cp "${ARK_CONFIG_DIR}/arkmanager.cfg" /etc/arkmanager/arkmanager.cfg
-        chmod 644 /etc/arkmanager/arkmanager.cfg
         echo "Copied arkmanager.cfg"
     else
         echo "WARNING: ${ARK_CONFIG_DIR}/arkmanager.cfg not found, arkmanager will use defaults"
@@ -76,7 +75,6 @@ setup_arkmanager() {
 
     if [[ -f "${ARK_CONFIG_DIR}/main.cfg" ]]; then
         cp "${ARK_CONFIG_DIR}/main.cfg" /etc/arkmanager/instances/main.cfg
-        chmod 644 /etc/arkmanager/instances/main.cfg
         echo "Copied main.cfg"
     else
         echo "WARNING: ${ARK_CONFIG_DIR}/main.cfg not found, arkmanager will use defaults"
