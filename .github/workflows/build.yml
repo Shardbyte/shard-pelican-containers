@@ -23,7 +23,6 @@ jobs:
       matrix:
         tag:
           - arkmanager
-          - arkmanager-2
 
     steps:
       - name: Checkout repository
