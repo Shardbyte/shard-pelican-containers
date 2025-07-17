@@ -18,11 +18,6 @@ ENV LANG=en_US.UTF-8 \
     USER=container \
     HOME=/home/container
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN echo steam steam/question select "I AGREE" | debconf-set-selections \
-    && echo steam steam/license note '' | debconf-set-selections \
-    && sed -i 's/^Components: main$/& contrib non-free/' /etc/apt/sources.list.d/debian.sources
-
 RUN dpkg --add-architecture i386 \
     && apt update \
     && apt -y upgrade \
@@ -30,25 +25,21 @@ RUN dpkg --add-architecture i386 \
         sed \
         tar \
         lsof \
-        gzip \
-        bzip2 \
+        bzip3 \
         curl \
         wget \
         cron \
         rsync \
-        locales \
-        ca-certificates \
         perl \
         perl-base \
         perl-modules \
+        locales \
         coreutils \
         findutils \
-        steamcmd \
+        libc6-i386 \
         lib32gcc-s1 \
         lib32stdc++6 \
-        libc6-i386 \
-        libcurl4-gnutls-dev:i386 \
-        libsdl2-2.0-0:i386 \
+        ca-certificates \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
