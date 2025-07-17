@@ -13,15 +13,14 @@ LABEL author="Shardbyte" \
       org.opencontainers.image.licenses="MIT"
 
 ENV LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8 \
     USER=container \
     HOME=/home/container
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN echo steam steam/question select "I AGREE" | debconf-set-selections \
     && echo steam steam/license note '' | debconf-set-selections \
-    && sed -i 's/^Components: main$/& contrib non-free/' /etc/apt/sources.list.d/debian.sources
+    && sed -i 's/^Components: main$/& contrib non-free/' /etc/apt/sources.list.d/debian.sources \
+    && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
 
 RUN dpkg --add-architecture i386 \
     && apt update \
@@ -53,8 +52,6 @@ RUN dpkg --add-architecture i386 \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
-
 RUN groupadd -g 988 container || true \
     && useradd -m -d /home/container -s /bin/bash -g container container
 USER container
@@ -62,4 +59,5 @@ WORKDIR /home/container
 
 COPY --chown=container:container entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
 CMD ["/bin/bash", "/entrypoint.sh"]
