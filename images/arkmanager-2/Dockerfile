@@ -68,14 +68,8 @@ RUN if [ "${ARK_TOOLS_VERSION}" = "latest" ]; then \
         tar xzf - -C /tmp/ && \
     cd "/tmp/ark-server-tools-${DOWNLOAD_VERSION}/tools" && \
     bash install.sh container && \
-    ln -s /usr/local/bin/arkmanager /usr/bin/arkmanager
-
-USER container
-WORKDIR /home/container
-
-# Install SteamCMD
-RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - -C steamcmd && \
-    steamcmd/steamcmd.sh +quit
+    ln -s /usr/local/bin/arkmanager /usr/bin/arkmanager && \
+    rm -rf /tmp/ark-server-tools-*
 
 # Copy configuration templates and entrypoint
 COPY --chown=container:container entrypoint.sh /entrypoint.sh
@@ -83,6 +77,13 @@ COPY --chown=container:container conf/ /home/container/conf/
 
 # Make entrypoint executable
 RUN chmod +x /entrypoint.sh
+
+USER container
+WORKDIR /home/container
+
+# Install SteamCMD
+RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - -C steamcmd && \
+    steamcmd/steamcmd.sh +quit
 
 EXPOSE 7777/udp 7778/udp 27015/udp 27020/tcp
 
