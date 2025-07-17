@@ -18,6 +18,11 @@ ENV LANG=en_US.UTF-8 \
     USER=container \
     HOME=/home/container
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN echo steam steam/question select "I AGREE" | debconf-set-selections \
+    && echo steam steam/license note '' | debconf-set-selections \
+    && sed -i 's/^Components: main$/& contrib non-free/' /etc/apt/sources.list.d/debian.sources
+
 RUN dpkg --add-architecture i386 \
     && apt update \
     && apt -y upgrade \
