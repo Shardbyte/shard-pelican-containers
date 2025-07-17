@@ -30,21 +30,20 @@ RUN dpkg --add-architecture i386 \
         perl \
         perl-base \
         perl-modules \
-        locales \
+        locales-all \
         coreutils \
         findutils \
         libc6-i386 \
         lib32gcc-s1 \
         lib32stdc++6 \
         ca-certificates \
-    && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-    && locale-gen \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 RUN groupadd -g 988 container || true \
     && useradd -m -d /home/container -s /bin/bash -g container container
