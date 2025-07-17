@@ -30,13 +30,16 @@ RUN dpkg --add-architecture i386 \
         perl \
         perl-base \
         perl-modules \
-        locales-all \
+        locales \
         coreutils \
         findutils \
         libc6-i386 \
         lib32gcc-s1 \
         lib32stdc++6 \
         ca-certificates \
+    && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
