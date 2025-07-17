@@ -1,0 +1,180 @@
+#################################################
+# Copyright (c) Shardbyte. All Rights Reserved. #
+# SPDX-License-Identifier: MIT                  #
+#################################################
+
+# ===============================================================================
+# ARK Server Manager - Crontab Configuration
+# ===============================================================================
+
+# ===============================================================================
+# CRONTAB FORMAT REFERENCE
+# ===============================================================================
+
+# Cron job format:
+# ┌─────────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌─────────── day of month (1 - 31)
+# │ │ │ ┌───────── month (1 - 12) OR jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+# │ │ │ │ ┌─────── day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * * user command to be executed
+
+# Special characters:
+# * = any value
+# , = value list separator (e.g., 1,3,5)
+# - = range of values (e.g., 1-5)
+# / = step values (e.g., */15 = every 15 minutes)
+
+# ===============================================================================
+# TIMEZONE CONFIGURATION
+# ===============================================================================
+
+# IMPORTANT: Container timezone may differ from your local timezone!
+#
+# Synchronization options:
+# - Mount host timezone: -v /etc/localtime:/etc/localtime:ro
+# - Set timezone env var: -e "TZ=America/New_York"
+# - Set timezone env var: -e "TZ=UTC"
+#
+# Common timezones:
+# - UTC (Coordinated Universal Time)
+# - America/New_York (Eastern Time)
+# - America/Chicago (Central Time)
+# - America/Denver (Mountain Time)
+# - America/Los_Angeles (Pacific Time)
+# - Europe/London (GMT/BST)
+# - Europe/Berlin (CET/CEST)
+
+# ===============================================================================
+# COMMON ARKMANAGER COMMANDS
+# ===============================================================================
+
+# Available arkmanager commands:
+# - arkmanager backup        → Create server backup
+# - arkmanager update        → Update server files
+# - arkmanager restart       → Restart server
+# - arkmanager start         → Start server
+# - arkmanager stop          → Stop server
+# - arkmanager status        → Check server status
+# - arkmanager saveworld     → Force save world
+# - arkmanager broadcast     → Send message to players
+
+# ===============================================================================
+# EXAMPLE SCHEDULES
+# ===============================================================================
+
+# --- BACKUP SCHEDULES ---
+
+# Backup every 15 minutes (frequent saves)
+# */15 * * * * su -c "arkmanager backup" steam 2>&1
+
+# Backup every 30 minutes (moderate frequency)
+# */30 * * * * su -c "arkmanager backup" steam 2>&1
+
+# Backup every hour (hourly saves)
+# 0 * * * * su -c "arkmanager backup" steam 2>&1
+
+# Backup every 2 hours (less frequent)
+# 0 */2 * * * su -c "arkmanager backup" steam 2>&1
+
+# Backup daily at midnight
+# 0 0 * * * su -c "arkmanager backup" steam 2>&1
+
+# Backup daily at 3 AM (low activity time)
+# 0 3 * * * su -c "arkmanager backup" steam 2>&1
+
+# --- UPDATE SCHEDULES ---
+
+# Check for updates daily at 4 AM
+# 0 4 * * * su -c "arkmanager update --check" steam 2>&1
+
+# Update server weekly on Sunday at 5 AM
+# 0 5 * * 0 su -c "arkmanager update --force" steam 2>&1
+
+# Update server monthly on the 1st at 2 AM
+# 0 2 1 * * su -c "arkmanager update --force" steam 2>&1
+
+# --- RESTART SCHEDULES ---
+
+# Restart server daily at 6 AM
+# 0 6 * * * su -c "arkmanager restart" steam 2>&1
+
+# Restart server twice daily (6 AM and 6 PM)
+# 0 6,18 * * * su -c "arkmanager restart" steam 2>&1
+
+# Restart server weekly on Monday at 5 AM
+# 0 5 * * 1 su -c "arkmanager restart" steam 2>&1
+
+# --- MAINTENANCE SCHEDULES ---
+
+# Save world every 10 minutes
+# */10 * * * * su -c "arkmanager saveworld" steam 2>&1
+
+# Broadcast warning message every 6 hours
+# 0 */6 * * * su -c "arkmanager broadcast 'Server maintenance in 1 hour'" steam 2>&1
+
+# Check server status every 5 minutes
+# */5 * * * * su -c "arkmanager status" steam 2>&1
+
+# --- COMBINED SCHEDULES ---
+
+# Comprehensive maintenance schedule:
+# - Backup every 30 minutes
+# - Save world every 10 minutes
+# - Restart daily at 6 AM
+# - Update check daily at 4 AM
+
+# */30 * * * * su -c "arkmanager backup" steam 2>&1
+# */10 * * * * su -c "arkmanager saveworld" steam 2>&1
+# 0 6 * * * su -c "arkmanager restart" steam 2>&1
+# 0 4 * * * su -c "arkmanager update --check" steam 2>&1
+
+# ===============================================================================
+# PRODUCTION RECOMMENDATIONS
+# ===============================================================================
+
+# Recommended production schedule for high-traffic servers:
+
+# World save every 5 minutes (prevents data loss)
+# */5 * * * * su -c "arkmanager saveworld" steam 2>&1
+
+# Backup every 15 minutes (frequent recovery points)
+# */15 * * * * su -c "arkmanager backup" steam 2>&1
+
+# Daily restart at 6 AM (server refresh)
+# 0 6 * * * su -c "arkmanager restart" steam 2>&1
+
+# Update check daily at 4 AM (before restart)
+# 0 4 * * * su -c "arkmanager update --check" steam 2>&1
+
+# ===============================================================================
+# CUSTOM SCHEDULES
+# ===============================================================================
+
+# Add your custom cron jobs below:
+
+# Example: Custom backup with notification
+# 0 */4 * * * su -c "arkmanager backup && echo 'Backup completed' | logger" steam 2>&1
+
+# Example: Conditional restart if server is running
+# 0 12 * * * su -c "arkmanager status | grep -q 'running' && arkmanager restart" steam 2>&1
+
+# ===============================================================================
+# TROUBLESHOOTING NOTES
+# ===============================================================================
+
+# Common issues and solutions:
+# 1. Jobs not running: Check cron service is running in container
+# 2. Permission errors: Ensure 'steam' user has proper permissions
+# 3. Path issues: Use full paths for commands if needed
+# 4. Timezone issues: Verify container timezone matches expectations
+# 5. Logging: Add "2>&1" to capture both stdout and stderr
+# 6. Testing: Test commands manually before adding to cron
+
+# Debugging tips:
+# - Check cron logs: tail -f /var/log/cron
+# - Test individual commands: su -c "arkmanager status" steam
+# - Verify user permissions: su - steam -c "whoami"
+# - Check arkmanager path: which arkmanager
