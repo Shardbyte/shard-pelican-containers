@@ -30,6 +30,7 @@ RUN dpkg --add-architecture i386 \
         curl \
         wget \
         cron \
+        rsync \
         locales \
         ca-certificates \
         perl \
@@ -37,9 +38,12 @@ RUN dpkg --add-architecture i386 \
         perl-modules \
         coreutils \
         findutils \
-        libc6-i386 \
+        steamcmd \
         lib32gcc-s1 \
         lib32stdc++6 \
+        libc6-i386 \
+        libcurl4-gnutls-dev:i386 \
+        libsdl2-2.0-0:i386 \
     && apt -y autoremove \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

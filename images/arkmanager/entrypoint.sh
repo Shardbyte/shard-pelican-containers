@@ -13,6 +13,18 @@ else
         if cp /home/container/bin/arkmanager /home/container/arkmanager; then
             echo "Creating install completion marker..." | tee stop-install-loop.sh > /dev/null
             echo "Ark Server Tools installation completed successfully"
+
+            # Configure arkmanager for Linux
+            mkdir -p /home/container/.config/arkmanager
+            cat > /home/container/.config/arkmanager/arkmanager.cfg << 'EOF'
+# ARK Server Manager Configuration
+arkserverexec="/home/container/ARK/ShooterGame/Binaries/Linux/ShooterGameServer"
+arkbackupdir="/home/container/ARK-Backups"
+arkautorestartfile="/home/container/ARK/ShooterGame/Saved/.autorestart"
+arkservercfgfie="/home/container/ARK/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+arkserverupdateonstart="true"
+arkprechecks="true"
+EOF
         else
             echo "Failed to copy arkmanager binary" >&2
             exit 1
