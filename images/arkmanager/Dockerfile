@@ -33,7 +33,7 @@ RUN dpkg --add-architecture i386 \
         perl \
         perl-base \
         perl-modules \
-        locales \
+        locales-all \
         coreutils \
         findutils \
         libc6-i386 \
@@ -45,10 +45,7 @@ RUN dpkg --add-architecture i386 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN groupadd -g 988 container || true \
-    && useradd -m -d /home/container -s /bin/bash -g container container \
-    && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
-    && locale-gen en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8
+    && useradd -m -d /home/container -s /bin/bash -g container container
 USER container
 WORKDIR /home/container
 
