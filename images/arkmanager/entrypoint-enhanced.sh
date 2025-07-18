@@ -164,7 +164,6 @@ arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
-arkserverdir="."
 
 # ===============================================================================
 # STEAMCMD CONFIGURATION
@@ -182,6 +181,7 @@ steamcmd_workshoplog="/home/container/.steam/logs/workshop_log.txt"
 # ===============================================================================
 appid=376030
 mod_appid=346110
+mod_branch=Windows
 
 # ===============================================================================
 # SERVER SETTINGS
@@ -193,7 +193,6 @@ ark_ServerPassword="${SERVER_PASSWORD:-}"
 ark_ServerAdminPassword="${ADMIN_PASSWORD:-changeMEplease}"
 ark_GameModIds="${MODS:-}"
 ark_ServerPVE=${SERVER_PVE:-false}
-mod_branch=Windows
 
 # ===============================================================================
 # NETWORK CONFIGURATION
@@ -450,9 +449,6 @@ if [[ ${#additional_args[@]} -gt 0 ]]; then
 fi
 
 log_server "Starting server with command: ${MODIFIED_STARTUP}"
-
-# Create config compatibility symlinks after a delay to allow server to generate configs
-(sleep 30 && create_config_compatibility) &
 
 ${MODIFIED_STARTUP}
 
