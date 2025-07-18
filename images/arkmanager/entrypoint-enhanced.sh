@@ -39,24 +39,6 @@ echo "Server Volume: ${ARK_SERVER_VOLUME}"
 
 echo "Setting up directory structure..."
 
-create_missing_dir() {
-    for directory in "$@"; do
-        [[ -n "${directory}" ]] || continue
-        if [[ ! -d "${directory}" ]]; then
-            mkdir -p "${directory}"
-            echo "Created directory: ${directory}"
-        fi
-    done
-}
-
-# Create essential directories
-create_missing_dir \
-    "/home/container/logs" \
-    "/home/container/backup" \
-    "/home/container/ShooterGame/Saved/SavedArks" \
-    "/home/container/ShooterGame/Content/Mods" \
-    "/home/container/ShooterGame/Binaries/Linux"
-
 # Handle Pelican's steamcmd directory structure
 if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" ]]; then
     [[ -L "/home/container/steamcmd" ]] || ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
@@ -116,6 +98,8 @@ install_datadir="/home/container/.arkmanager"
 # ===============================================================================
 arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
+arkserveropts=""
+arkserverdir="/home/container"
 servicename="arkserv"
 
 # ===============================================================================
