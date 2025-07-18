@@ -39,31 +39,10 @@ echo "Server Volume: ${ARK_SERVER_VOLUME}"
 
 echo "Setting up directory structure..."
 
-# Handle Pelican's steamcmd directory structure and consolidate Steam components
-echo "Consolidating Steam components..."
-
-# Move/link steamcmd to organized location
+# Handle Pelican's steamcmd directory structure
 if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" ]]; then
-    if [[ -d "${ARK_SERVER_VOLUME}/steamcmd" ]] && [[ ! -L "/home/container/steamcmd" ]]; then
-        ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/.steam/bin/steamcmd" 2>/dev/null || true
-        ln -sf "/home/container/.steam/bin/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
-    elif [[ -d "/home/container/steamcmd" ]] && [[ ! -L "/home/container/steamcmd" ]]; then
-        mv "/home/container/steamcmd" "/home/container/.steam/bin/steamcmd" 2>/dev/null || true
-        ln -sf "/home/container/.steam/bin/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
-    fi
+    [[ -L "/home/container/steamcmd" ]] || ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
 fi
-
-# Consolidate other Steam directories and files
-echo "Moving Steam directories to consolidated location..."
-[[ -d "/home/container/steamapps" ]] && mv "/home/container/steamapps" "/home/container/.steam/data/steamapps" 2>/dev/null || true
-[[ -d "/home/container/Steam" ]] && mv "/home/container/Steam" "/home/container/.steam/data/Steam" 2>/dev/null || true
-
-# Move Steam client files to organized location
-echo "Moving Steam client files..."
-mkdir -p "/home/container/.steam/bin/lib"
-for steam_file in steamclient.dll steamclient.so steamclient64.dll tier0_s.dll tier0_s64.dll vstdlib_s.dll vstdlib_s64.dll; do
-    [[ -f "/home/container/${steam_file}" ]] && mv "/home/container/${steam_file}" "/home/container/.steam/bin/lib/${steam_file}" 2>/dev/null || true
-done
 
 # Create config directory and default files to prevent arkmanager errors
 echo "Creating ARK config directory and default files..."
@@ -102,12 +81,9 @@ fi
 # ARK TOOLS INSTALLATION
 # ===============================================================================
 
-# Create arkmanager and steam directories first (before installation)
+# Create arkmanager directories first (before installation)
 echo "Creating arkmanager directory structure..."
-mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
-
-echo "Creating consolidated steam directory structure..."
-mkdir -p /home/container/.steam/bin /home/container/.steam/cache /home/container/.steam/logs /home/container/.steam/data /home/container/.steam/downloads
+mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs /home/container/staging
 
 if command -v arkmanager >/dev/null 2>&1; then
     echo "Ark Server Tools already installed"
@@ -146,7 +122,7 @@ rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 
-# Clean up unnecessary files and directories
+# Clean up unnecessary arkmanager files and directories
 echo "Cleaning up unnecessary files and directories..."
 rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
@@ -158,7 +134,6 @@ echo "Cleaning up installation artifacts..."
 rm -f /home/container/Manifest_*.txt 2>/dev/null || true
 rm -f /home/container/PackageInfo.bin 2>/dev/null || true
 rm -f /home/container/SteamCMDInstall.sh 2>/dev/null || true
-rm -f /home/container/version.txt 2>/dev/null || true
 
 # Create single user configuration file with all necessary settings
 cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
@@ -188,12 +163,12 @@ arkserverdir="."
 # ===============================================================================
 # STEAMCMD CONFIGURATION
 # ===============================================================================
-steamcmdroot="/home/container/.steam/bin/steamcmd"
+steamcmdroot="/home/container/steamcmd"
 steamcmdexec="steamcmd.sh"
 steamcmd_user="container"
 steamcmdhome="/home/container"
 steamlogin="anonymous"
-steamcmd_appinfocache="/home/container/.steam/cache/appinfo.vdf"
+steamcmd_appinfocache="/home/container/.steam/appcache/appinfo.vdf"
 steamcmd_workshoplog="/home/container/.steam/logs/workshop_log.txt"
 
 # ===============================================================================
@@ -250,19 +225,19 @@ msgWarnShutdownSeconds="This ARK server will shutdown in %d seconds"
 # PATHS AND LOGGING
 # ===============================================================================
 logdir="/home/container/logs"
-arkStagingDir="/home/container/.steam/downloads"
+arkStagingDir="/home/container/staging"
 progressDisplayType="spinner"
 
 # Fix path issues - ensure arkmanager uses correct base paths
 arkopt_GameUserSettingsIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
 arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini"
 
-# Ensure mods go to the correct location and use consolidated steam downloads
+# Ensure mods go to the correct location and use staging
 arkmod_path="/home/container/ShooterGame/Content/Mods"
-ark_ModInstallationStagingDir="/home/container/.steam/downloads"
+ark_ModInstallationStagingDir="/home/container/staging"
 
 # Override arkmanager's default mod download behavior
-arkmod_downloaddir="/home/container/.steam/downloads"
+arkmod_downloaddir="/home/container/staging"
 arkmod_install_path="/home/container/ShooterGame/Content/Mods"
 
 # ===============================================================================
@@ -371,12 +346,12 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
         fi
     done
 
-    # Clean up only mod-related files from steam downloads directory
-    echo "Cleaning up mod files from steam downloads directory..."
-    rm -rf "/home/container/.steam/downloads/steamapps" 2>/dev/null || true
-    rm -rf "/home/container/.steam/downloads/workshop" 2>/dev/null || true
-    rm -f "/home/container/.steam/downloads"/*.mod 2>/dev/null || true
-    rm -f "/home/container/.steam/downloads"/mod_* 2>/dev/null || true
+    # Clean up only mod-related files from staging directory
+    echo "Cleaning up mod files from staging directory..."
+    rm -rf "/home/container/staging/steamapps" 2>/dev/null || true
+    rm -rf "/home/container/staging/workshop" 2>/dev/null || true
+    rm -f "/home/container/staging"/*.mod 2>/dev/null || true
+    rm -f "/home/container/staging"/mod_* 2>/dev/null || true
 
     # Final cleanup - ensure no Content directory exists
     echo "Final cleanup of Content directory..."
