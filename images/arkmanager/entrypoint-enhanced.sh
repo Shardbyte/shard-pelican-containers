@@ -131,7 +131,6 @@ rm -f /home/container/version.txt 2>/dev/null || true
 rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
-rm -rf /home/container/Content 2>/dev/null || true
 
 # Clean up installation artifacts
 rm -f /home/container/Manifest_*.txt 2>/dev/null || true
@@ -328,17 +327,6 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
             log_mod "Mod ${mod_id} already installed"
         fi
     done
-
-    # Clean up only mod-related files from staging directory
-    log_info "Cleaning up mod files from staging directory..."
-    rm -rf "/home/container/staging/steamapps" 2>/dev/null || true
-    rm -rf "/home/container/staging/workshop" 2>/dev/null || true
-    rm -f "/home/container/staging"/*.mod 2>/dev/null || true
-    rm -f "/home/container/staging"/mod_* 2>/dev/null || true
-
-    # Final cleanup - ensure no Content directory exists
-    log_info "Final cleanup of Content directory..."
-    rm -rf "/home/container/Content" 2>/dev/null || true
 fi
 
 # ===============================================================================
