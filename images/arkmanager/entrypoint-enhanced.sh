@@ -85,25 +85,6 @@ if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" 
     [[ -L "/home/container/steamcmd" ]] || ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
 fi
 
-# Create config directories (server will create .ini files on first run)
-mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
-
-# Create temporary compatibility directory structure for arkmanager
-# arkmanager seems to construct its own paths regardless of our config
-mkdir -p "/home/container/Saved/Config/LinuxServer"
-
-# Create symlinks from arkmanager's expected locations to the real config files
-create_config_compatibility() {
-    # Wait for server to create real config files first
-    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
-        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" 2>/dev/null || true
-    fi
-
-    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]]; then
-        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini" 2>/dev/null || true
-    fi
-}
-
 # ===============================================================================
 # ARK TOOLS INSTALLATION
 # ===============================================================================
@@ -259,8 +240,8 @@ arkStagingDir="/home/container/staging"
 progressDisplayType="spinner"
 
 # Fix path issues - ensure arkmanager uses correct base paths
-arkopt_GameUserSettingsIniFile="ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
-arkopt_GameIniFile="ShooterGame/Saved/Config/LinuxServer/Game.ini"
+arkGameUserSettingsIniFile="ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+arkGameIniFile="ShooterGame/Saved/Config/LinuxServer/Game.ini"
 
 # Ensure mods go to the correct location and use staging
 arkmod_path="/home/container/ShooterGame/Content/Mods"
