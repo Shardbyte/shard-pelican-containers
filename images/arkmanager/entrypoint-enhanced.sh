@@ -88,6 +88,22 @@ fi
 # Create config directories (server will create .ini files on first run)
 mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
 
+# Create temporary compatibility directory structure for arkmanager
+# arkmanager seems to construct its own paths regardless of our config
+mkdir -p "/home/container/Saved/Config/LinuxServer"
+
+# Create symlinks from arkmanager's expected locations to the real config files
+create_config_compatibility() {
+    # Wait for server to create real config files first
+    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
+        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" 2>/dev/null || true
+    fi
+
+    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]]; then
+        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini" 2>/dev/null || true
+    fi
+}
+
 # ===============================================================================
 # ARK TOOLS INSTALLATION
 # ===============================================================================
@@ -453,6 +469,9 @@ if [[ ${#additional_args[@]} -gt 0 ]]; then
 fi
 
 log_server "Starting server with command: ${MODIFIED_STARTUP}"
+
+# Create config compatibility symlinks after a delay to allow server to generate configs
+(sleep 30 && create_config_compatibility) &
 
 ${MODIFIED_STARTUP}
 
