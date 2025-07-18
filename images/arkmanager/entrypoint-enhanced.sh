@@ -226,11 +226,54 @@ if [[ -z ${AUTO_UPDATE} ]] || [[ "${AUTO_UPDATE}" == "1" ]]; then
 
         # SteamCMD update command (adjusted for Pterodactyl compatibility)
         if [[ -f "${STEAMCMD_PATH}" ]]; then
-            if [[ "${STEAM_USER}" == "anonymous" ]]; then
-                ${STEAMCMD_PATH} +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} $( [[ "${WINDOWS_INSTALL}" == "1" ]] && printf %s '+@sSteamCmdForcePlatformType windows' ) +app_update 1007 +app_update ${SRCDS_APPID} $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) $( [[ -z ${HLDS_GAME} ]] || printf %s "+app_set_config 90 mod ${HLDS_GAME}" )  ${INSTALL_FLAGS} $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) +quit
+            echo "Running SteamCMD update with timeout protection..."
+
+            # Create a temporary script to run steamcmd with proper error handling
+            cat > /tmp/steamcmd_update.sh << 'EOF'
+#!/bin/bash
+# Ensure we have proper steam directory structure
+mkdir -p /home/container/.steam/sdk32
+mkdir -p /home/container/.steam/sdk64
+
+# Set HOME to ensure Steam uses the right directory
+export HOME=/home/container
+
+# Clear any existing Steam lock files that might cause issues
+rm -f /home/container/.steam/registry.vdf.lock
+rm -f /home/container/.steam/ClientRegistry.blob.lock
+
+# Run steamcmd with proper arguments
+exec "$@"
+EOF
+            chmod +x /tmp/steamcmd_update.sh
+
+            if [[ "${STEAM_USER:-anonymous}" == "anonymous" ]]; then
+                echo "Starting anonymous SteamCMD update..."
+                timeout 300 /tmp/steamcmd_update.sh ${STEAMCMD_PATH} \
+                    +force_install_dir /home/container \
+                    +login anonymous \
+                    +app_update ${SRCDS_APPID} \
+                    $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) \
+                    $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) \
+                    ${INSTALL_FLAGS} \
+                    $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) \
+                    +quit || echo "SteamCMD update completed or timed out"
             else
-                ${STEAMCMD_PATH} +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} $( [[ "${WINDOWS_INSTALL}" == "1" ]] && printf %s '+@sSteamCmdForcePlatformType windows' ) +app_update 1007 +app_update ${SRCDS_APPID} $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) $( [[ -z ${HLDS_GAME} ]] || printf %s "+app_set_config 90 mod ${HLDS_GAME}" ) ${INSTALL_FLAGS} $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) +quit
+                echo "Starting authenticated SteamCMD update..."
+                timeout 300 /tmp/steamcmd_update.sh ${STEAMCMD_PATH} \
+                    +force_install_dir /home/container \
+                    +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} \
+                    +app_update ${SRCDS_APPID} \
+                    $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) \
+                    $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) \
+                    ${INSTALL_FLAGS} \
+                    $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) \
+                    +quit || echo "SteamCMD update completed or timed out"
             fi
+
+            # Clean up
+            rm -f /tmp/steamcmd_update.sh
+            echo "SteamCMD update process finished"
         fi
     else
         echo "No appid set. Starting Server"
