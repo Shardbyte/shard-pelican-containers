@@ -83,7 +83,7 @@ fi
 
 # Create arkmanager directories first (before installation)
 echo "Creating arkmanager directory structure..."
-mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
+mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs /home/container/staging
 
 if command -v arkmanager >/dev/null 2>&1; then
     echo "Ark Server Tools already installed"
@@ -226,8 +226,9 @@ progressDisplayType="spinner"
 arkopt_GameUserSettingsIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
 arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini"
 
-# Ensure mods go to the correct location
+# Ensure mods go to the correct location and use staging
 arkmod_path="/home/container/ShooterGame/Content/Mods"
+ark_ModInstallationStagingDir="/home/container/staging"
 
 # ===============================================================================
 # CLUSTER CONFIGURATION
@@ -321,19 +322,21 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
         if [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
             echo "Installing mod ${mod_id}..."
             ./arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
-
-            # If mod was installed in wrong location, move it to correct location
-            if [[ -d "/home/container/Content/Mods/${mod_id}" ]] && [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
-                echo "Moving mod ${mod_id} to correct location..."
-                mv "/home/container/Content/Mods/${mod_id}" "/home/container/ShooterGame/Content/Mods/${mod_id}"
-                # Clean up empty directory if it exists
-                rm -rf "/home/container/Content/Mods" 2>/dev/null || true
-                rm -rf "/home/container/Content" 2>/dev/null || true
-            fi
         else
             echo "Mod ${mod_id} already installed"
         fi
     done
+
+    # Clean up only mod-related files from staging directory
+    echo "Cleaning up mod files from staging directory..."
+    rm -rf "/home/container/staging/steamapps" 2>/dev/null || true
+    rm -rf "/home/container/staging/workshop" 2>/dev/null || true
+    rm -f "/home/container/staging"/*.mod 2>/dev/null || true
+    rm -f "/home/container/staging"/mod_* 2>/dev/null || true
+
+    # Final cleanup - ensure no Content directory exists
+    echo "Final cleanup of Content directory..."
+    rm -rf "/home/container/Content" 2>/dev/null || true
 fi
 
 # ===============================================================================
