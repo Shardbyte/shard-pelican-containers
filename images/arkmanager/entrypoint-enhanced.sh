@@ -44,38 +44,23 @@ if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" 
     [[ -L "/home/container/steamcmd" ]] || ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
 fi
 
-# Create config directory and default files to prevent arkmanager errors
-echo "Creating ARK config directory and default files..."
+# Create config directories (server will create .ini files on first run)
+echo "Creating ARK config directories..."
 mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
 mkdir -p "/home/container/Saved/Config/LinuxServer"
 
-# Create configs in ShooterGame directory (actual ARK location)
-if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]]; then
-    cat > "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" << 'EOF'
-[/script/shootergame.shootergamemode]
+# Create symlinks for config files after server creates them
+create_config_symlinks() {
+    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/Game.ini" ]]; then
+        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini"
+        echo "Created symlink for Game.ini"
+    fi
 
-EOF
-    echo "Created default Game.ini in ShooterGame"
-fi
-
-if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
-    cat > "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" << 'EOF'
-[ServerSettings]
-
-EOF
-    echo "Created default GameUserSettings.ini in ShooterGame"
-fi
-
-# Create symlinks where arkmanager expects them (root Saved directory)
-if [[ ! -f "/home/container/Saved/Config/LinuxServer/Game.ini" ]]; then
-    ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini"
-    echo "Created symlink for Game.ini"
-fi
-
-if [[ ! -f "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
-    ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini"
-    echo "Created symlink for GameUserSettings.ini"
-fi
+    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
+        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini"
+        echo "Created symlink for GameUserSettings.ini"
+    fi
+}
 
 # ===============================================================================
 # ARK TOOLS INSTALLATION
@@ -359,6 +344,9 @@ echo "Starting ARK Server..."
     echo "Please ensure the server is properly installed via Pelican's egg installer."
     exit 1
 }
+
+# Create config symlinks if server has generated config files
+create_config_symlinks
 
 # Execute startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
