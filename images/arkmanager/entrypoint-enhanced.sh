@@ -443,4 +443,6 @@ fi
 log_server "Starting server with command: ${MODIFIED_STARTUP}"
 
 # Execute the startup command and handle exit properly
-exec ${MODIFIED_STARTUP}
+${MODIFIED_STARTUP}
+
+/bin/bash
