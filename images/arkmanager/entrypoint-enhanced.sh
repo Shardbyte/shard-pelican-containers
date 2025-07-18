@@ -312,6 +312,41 @@ echo "Checking for path duplication issues..."
 echo "============================="
 
 # ===============================================================================
+# SERVER INSTALLATION
+# ===============================================================================
+
+# Check if ARK server is installed, install if needed
+install_server() {
+    echo "Checking ARK server installation..."
+
+    # Check if server binary exists
+    if [[ ! -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]]; then
+        echo "ARK server not found - installing via arkmanager..."
+
+        # Use arkmanager to install the server
+        if [[ -n "${SRCDS_BETAID:-}" ]]; then
+            echo "Installing ARK server with beta branch: ${SRCDS_BETAID}"
+            ./arkmanager install --beta="${SRCDS_BETAID}" --verbose
+        else
+            echo "Installing ARK server (stable branch)"
+            ./arkmanager install --verbose
+        fi
+
+        # Verify installation
+        if [[ ! -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]]; then
+            echo "ERROR: ARK server installation failed!"
+            exit 1
+        fi
+
+        echo "ARK server installed successfully via arkmanager"
+    else
+        echo "ARK server already installed"
+    fi
+}
+
+install_server
+
+# ===============================================================================
 # CRON SETUP
 # ===============================================================================
 
@@ -385,13 +420,7 @@ cd /home/container || exit 1
 
 echo "Starting ARK Server..."
 
-# Validate server binary exists
-[[ -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]] || {
-    echo "ERROR: ARK server binary not found at /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
-    echo "Please ensure the server is properly installed via Pelican's egg installer."
-    exit 1
-}
-
+# Server should be installed by arkmanager at this point
 # Execute startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
 echo ":/home/container$ ${MODIFIED_STARTUP}"
