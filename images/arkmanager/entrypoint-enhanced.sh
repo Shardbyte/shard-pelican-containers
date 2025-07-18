@@ -87,7 +87,11 @@ if command -v arkmanager >/dev/null 2>&1; then
     echo "Ark Server Tools already installed, skipping..."
 else
     echo "Installing Ark Server Tools..."
-    if curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install; then
+    # Run the installation script (ignore exit code, check for actual binary instead)
+    curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install || true
+
+    # Check if installation actually succeeded by looking for the binary
+    if [[ -f "/home/container/bin/arkmanager" ]] || [[ -f "/home/container/arkmanager" ]] || command -v arkmanager >/dev/null 2>&1; then
         echo "Ark Server Tools installation completed successfully"
 
         # Check if arkmanager was installed in bin directory
@@ -102,11 +106,9 @@ else
         elif [[ -f "/home/container/arkmanager" ]]; then
             chmod +x /home/container/arkmanager
             echo "Made arkmanager executable"
-        else
-            echo "WARNING: arkmanager binary not found in expected locations"
         fi
     else
-        echo "Failed to install Ark Server Tools" >&2
+        echo "Failed to install Ark Server Tools - binary not found after installation" >&2
         exit 1
     fi
 fi
