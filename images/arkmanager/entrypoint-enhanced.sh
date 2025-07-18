@@ -87,14 +87,19 @@ else
     echo "Installing Ark Server Tools..."
     curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install || true
 
-    # Verify installation and set up symlink
+    # Verify installation and set up symlinks
     if [[ -f "/home/container/bin/arkmanager" ]]; then
-        ln -sf "/home/container/bin/arkmanager" "/home/container/arkmanager"
-        chmod +x /home/container/bin/arkmanager
-        echo "Ark Server Tools installed successfully"
+        # Move existing arkmanager to new location
+        mv "/home/container/bin/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
+        chmod +x /home/container/.arkmanager/bin/arkmanager
+        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
+        echo "Ark Server Tools installed and moved to .arkmanager/bin"
     elif [[ -f "/home/container/arkmanager" ]]; then
-        chmod +x /home/container/arkmanager
-        echo "Ark Server Tools installed successfully"
+        # Move existing arkmanager to new location
+        mv "/home/container/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
+        chmod +x /home/container/.arkmanager/bin/arkmanager
+        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
+        echo "Ark Server Tools installed and moved to .arkmanager/bin"
     else
         echo "Failed to install Ark Server Tools - binary not found" >&2
         exit 1
@@ -116,10 +121,11 @@ rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
 echo "Cleaning up unnecessary files and directories..."
 rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
-rm -rf /home/container/.config/arkmanager 2>/dev/null || true
+rm -rf /home/container/.config 2>/dev/null || true
+rm -rf /home/container/Content 2>/dev/null || true
 
 # Create arkmanager configuration directories
-mkdir -p /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
+mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
 
 # Create single user configuration file with all necessary settings
 cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
@@ -133,7 +139,7 @@ arkSingleInstance="true"
 # ARK MANAGER INSTALLATION PATHS
 # ===============================================================================
 arkstChannel="${BRANCH:-master}"
-install_bindir="/home/container/bin"
+install_bindir="/home/container/.arkmanager/bin"
 install_libexecdir="/home/container/.arkmanager/libexec"
 install_datadir="/home/container/.arkmanager/data"
 
