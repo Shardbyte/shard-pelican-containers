@@ -151,6 +151,11 @@ copy_missing_file "${TEMPLATE_DIRECTORY}/arkmanager.cfg" "${ARK_TOOLS_DIR}/arkma
 copy_missing_file "${TEMPLATE_DIRECTORY}/arkmanager-user.cfg" "${ARK_TOOLS_DIR}/instances/main.cfg"
 copy_missing_file "${TEMPLATE_DIRECTORY}/crontab" "${ARK_SERVER_VOLUME}/crontab"
 
+# Set arkmanager environment variables to ensure proper paths
+export arkserverroot="/home/container"
+export ARK_SERVER_DIR="/home/container"
+export ARK_INSTALL_DIR="/home/container"
+
 # Create symlink for arkmanager configuration
 echo "Creating configuration symlinks..."
 if [[ -e "/home/container/.config/arkmanager" ]] || [[ -L "/home/container/.config/arkmanager" ]]; then
