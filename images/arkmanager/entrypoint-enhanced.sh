@@ -119,15 +119,14 @@ fi
 
 echo "Setting up arkmanager configuration..."
 
-# Ensure proper arkmanager configuration directories exist
-mkdir -p /etc/arkmanager/instances
+# Ensure proper arkmanager configuration directories exist (using user space instead of /etc)
 mkdir -p /home/container/.config/arkmanager/instances
 mkdir -p /home/container/logs
 
 # CRITICAL: Create the proper instance configuration file
 # This is where arkmanager looks for instance-specific settings
 echo "Creating arkmanager instance configuration..."
-cat > /etc/arkmanager/instances/main.cfg << 'EOF'
+cat > /home/container/.config/arkmanager/instances/main.cfg << 'EOF'
 # ===============================================================================
 # ARK Server Manager Instance Configuration - main
 # Generated for Pterodactyl container environment
@@ -164,10 +163,10 @@ arkbackupdir="/home/container/backup"
 logdir="/home/container/logs"
 EOF
 
-# Create the global configuration file
+# Create the global configuration file in user space
 echo "Creating arkmanager global configuration..."
 if [[ -f "/home/container/conf.d/arkmanager.cfg" ]]; then
-    cp /home/container/conf.d/arkmanager.cfg /etc/arkmanager/arkmanager.cfg
+    cp /home/container/conf.d/arkmanager.cfg /home/container/.config/arkmanager/arkmanager.cfg
 else
     echo "Warning: arkmanager.cfg template not found"
 fi
@@ -185,6 +184,7 @@ arkserverroot="/home/container"
 
 # Instance configuration
 defaultinstance="main"
+configfile_main="/home/container/.config/arkmanager/instances/main.cfg"
 
 # User-specific settings
 steamcmd_user="container"
@@ -194,7 +194,7 @@ logdir="/home/container/logs"
 EOF
 
 # Set proper permissions for all configuration files
-chown -R container:container /etc/arkmanager/
+chown -R container:container /home/container/.config/arkmanager/
 chown container:container /home/container/.arkmanager.cfg
 
 # Set arkmanager environment variables to ensure proper paths
@@ -203,6 +203,10 @@ export arkserverroot="/home/container"
 export ARK_SERVER_DIR="/home/container"
 export ARK_INSTALL_DIR="/home/container"
 export ARKSERVERROOT="/home/container"
+
+# Point arkmanager to user-space configuration files
+export arkstGlobalCfgFileOverride="/home/container/.config/arkmanager/arkmanager.cfg"
+export arkstUserCfgFileOverride="/home/container/.arkmanager.cfg"
 
 echo "arkmanager configuration setup complete."
 
@@ -214,8 +218,8 @@ echo "Verifying arkmanager configuration..."
 
 # Show what configuration files exist
 echo "Configuration files:"
-echo "  Global config: /etc/arkmanager/arkmanager.cfg $(test -f /etc/arkmanager/arkmanager.cfg && echo 'EXISTS' || echo 'MISSING')"
-echo "  Instance config: /etc/arkmanager/instances/main.cfg $(test -f /etc/arkmanager/instances/main.cfg && echo 'EXISTS' || echo 'MISSING')"
+echo "  Global config: /home/container/.config/arkmanager/arkmanager.cfg $(test -f /home/container/.config/arkmanager/arkmanager.cfg && echo 'EXISTS' || echo 'MISSING')"
+echo "  Instance config: /home/container/.config/arkmanager/instances/main.cfg $(test -f /home/container/.config/arkmanager/instances/main.cfg && echo 'EXISTS' || echo 'MISSING')"
 echo "  User config: /home/container/.arkmanager.cfg $(test -f /home/container/.arkmanager.cfg && echo 'EXISTS' || echo 'MISSING')"
 
 # Show environment variables
