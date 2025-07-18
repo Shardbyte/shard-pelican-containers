@@ -77,122 +77,6 @@ echo "Setting up arkmanager configuration..."
 # Create arkmanager configuration directories
 mkdir -p /home/container/.config/arkmanager/instances /home/container/logs
 
-# Create instance-specific configuration file
-cat > /home/container/.config/arkmanager/instances/main.cfg << 'EOF'
-# ===============================================================================
-# INSTANCE CONFIGURATION
-# ===============================================================================
-defaultinstance="main"
-arkSingleInstance="true"
-
-# ===============================================================================
-# ARK MANAGER INSTALLATION PATHS
-# ===============================================================================
-arkstChannel="${BRANCH:-master}"
-install_bindir="/home/container/bin"
-install_libexecdir="/home/container/.arkmanager"
-install_datadir="/home/container/.arkmanager"
-
-# ===============================================================================
-# SERVER PATHS
-# ===============================================================================
-arkserverroot="/home/container"
-arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
-arkbackupdir="/home/container/backup"
-servicename="arkserv"
-
-# Instance-specific override (this should fix the path issue)
-main_arkserverroot="/home/container"
-main_arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
-
-# ===============================================================================
-# STEAMCMD CONFIGURATION
-# ===============================================================================
-steamcmdroot="/home/container/steamcmd"
-steamcmdexec="steamcmd.sh"
-steamcmd_user="container"
-steamcmdhome="/home/container"
-steamlogin="anonymous"
-steamcmd_appinfocache="/home/container/.steam/appcache/appinfo.vdf"
-steamcmd_workshoplog="/home/container/.steam/logs/workshop_log.txt"
-
-# ===============================================================================
-# STEAM APPLICATION IDS
-# ===============================================================================
-appid=376030
-mod_appid=346110
-
-# ===============================================================================
-# SERVER SETTINGS
-# ===============================================================================
-serverMap="${MAP:-TheIsland}"
-ark_MaxPlayers=${MAX_PLAYERS:-20}
-ark_SessionName="${SESSION_NAME:-ARK Server}"
-ark_ServerPassword="${SERVER_PASSWORD:-}"
-ark_ServerAdminPassword="${ADMIN_PASSWORD:-changeMEplease}"
-ark_GameModIds="${MODS:-}"
-ark_ServerPVE=${SERVER_PVE:-false}
-mod_branch=Windows
-
-# ===============================================================================
-# NETWORK CONFIGURATION
-# ===============================================================================
-ark_Port=${GAME_CLIENT_PORT:-7778}
-ark_QueryPort=${SERVER_LIST_PORT:-27015}
-ark_RCONPort=${RCON_PORT:-27020}
-ark_RCONEnabled="true"
-
-# ===============================================================================
-# SERVER BEHAVIOR
-# ===============================================================================
-arkAutoUpdateOnStart=${UPDATE_ON_START:-false}
-arkBackupPreUpdate=${PRE_UPDATE_BACKUP:-false}
-arkautorestartfile="ShooterGame/Saved/.autorestart"
-arkNoPortDecrement="true"
-
-# ===============================================================================
-# BACKUP CONFIGURATION
-# ===============================================================================
-arkbackupcompress="true"
-arkwarnminutes="30"
-arkprecisewarn="true"
-arkBackupPostCommand="${BACKUP_POST_COMMAND:-echo 'Backup Complete!'}"
-arkMaxBackupSizeMB="${MAX_BACKUP_SIZE_MB:-500}"
-
-msgWarnUpdateMinutes="This ARK server will shutdown for an update in %d minutes"
-msgWarnUpdateSeconds="This ARK server will shutdown for an update in %d seconds"
-msgWarnRestartMinutes="This ARK server will shutdown for a restart in %d minutes"
-msgWarnRestartSeconds="This ARK server will shutdown for a restart in %d seconds"
-msgWarnShutdownMinutes="This ARK server will shutdown in %d minutes"
-msgWarnShutdownSeconds="This ARK server will shutdown in %d seconds"
-
-# ===============================================================================
-# PATHS AND LOGGING
-# ===============================================================================
-logdir="/home/container/logs"
-arkStagingDir="/home/container/staging"
-progressDisplayType="spinner"
-
-# ===============================================================================
-# CLUSTER CONFIGURATION
-# ===============================================================================
-#ark_clusterid="${CLUSTER_ID:-}"
-#ark_ClusterDirOverride="/home/container/cluster"
-#arkflag_NoTransferFromFiltering="false"
-
-#ark_PreventDownloadSurvivors="false"
-#ark_PreventDownloadItems="false"
-#ark_PreventDownloadDinos="false"
-#ark_PreventUploadSurvivors="false"
-#ark_PreventUploadItems="false"
-#ark_PreventUploadDinos="false"
-#ark_noTributeDownloads="false"
-
-# ===============================================================================
-# ALTERNATE CONFIGURATIONS
-# ===============================================================================
-EOF
-
 # Create single user configuration file with all necessary settings
 cat > /home/container/.arkmanager.cfg << 'EOF'
 # ===============================================================================
@@ -216,10 +100,6 @@ arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
-
-# Instance-specific override (this should fix the path issue)
-main_arkserverroot="/home/container"
-main_arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 
 # ===============================================================================
 # STEAMCMD CONFIGURATION
@@ -311,7 +191,6 @@ EOF
 
 # Set proper ownership
 chown container:container /home/container/.arkmanager.cfg
-chown container:container /home/container/.config/arkmanager/instances/main.cfg
 
 # Set environment variables
 export arkserverroot="/home/container"
