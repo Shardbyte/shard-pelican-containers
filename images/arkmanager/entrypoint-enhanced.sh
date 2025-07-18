@@ -218,10 +218,15 @@ arkNoPortDecrement="true"
 # BACKUP CONFIGURATION
 # ===============================================================================
 arkbackupcompress="true"
-arkwarnminutes="5"
 arkprecisewarn="true"
 arkBackupPostCommand="${BACKUP_POST_COMMAND:-echo 'Backup Complete!'}"
 arkMaxBackupSizeMB="${MAX_BACKUP_SIZE_MB:-500}"
+
+
+arkwarnminutes="5"
+arkwarnshutdownminutes="5"
+arkwarnrestartminutes="5"
+arkwarnupdateminutes="5"
 
 msgWarnUpdateMinutes="This ARK server will shutdown for an update in %d minutes"
 msgWarnUpdateSeconds="This ARK server will shutdown for an update in %d seconds"
@@ -238,8 +243,8 @@ arkStagingDir="/home/container/staging"
 progressDisplayType="spinner"
 
 # Fix path issues - ensure arkmanager uses correct base paths
-arkopt_GameUserSettingsIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
-arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini"
+arkopt_GameUserSettingsIniFile="ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+arkopt_GameIniFile="ShooterGame/Saved/Config/LinuxServer/Game.ini"
 
 # Ensure mods go to the correct location and use staging
 arkmod_path="/home/container/ShooterGame/Content/Mods"
