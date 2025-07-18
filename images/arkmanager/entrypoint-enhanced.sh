@@ -182,8 +182,18 @@ fi
 
 # Setup cron jobs if crontab exists
 if [[ -f "${ARK_SERVER_VOLUME}/crontab" ]]; then
-    crontab "${ARK_SERVER_VOLUME}/crontab"
-    echo "Cron jobs configured"
+    echo "Setting up cron jobs..."
+    if crontab "${ARK_SERVER_VOLUME}/crontab" 2>/dev/null; then
+        echo "Cron jobs configured successfully"
+    else
+        echo "WARNING: Could not configure cron jobs (permission denied or cron not available)"
+        echo "This is normal in containerized environments - scheduled tasks may need to be handled externally"
+        # Create a backup copy for manual setup if needed
+        cp "${ARK_SERVER_VOLUME}/crontab" "${ARK_SERVER_VOLUME}/crontab.example" 2>/dev/null || true
+        echo "Crontab saved as ${ARK_SERVER_VOLUME}/crontab.example for reference"
+    fi
+else
+    echo "No crontab file found, skipping cron setup"
 fi
 
 # ===============================================================================
