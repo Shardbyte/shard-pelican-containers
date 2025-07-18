@@ -230,6 +230,10 @@ arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.in
 arkmod_path="/home/container/ShooterGame/Content/Mods"
 ark_ModInstallationStagingDir="/home/container/staging"
 
+# Override arkmanager's default mod download behavior
+arkmod_downloaddir="/home/container/staging"
+arkmod_install_path="/home/container/ShooterGame/Content/Mods"
+
 # ===============================================================================
 # CLUSTER CONFIGURATION
 # ===============================================================================
@@ -322,6 +326,15 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
         if [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
             echo "Installing mod ${mod_id}..."
             ./arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
+
+            # Immediate cleanup after each mod installation
+            if [[ -d "/home/container/Content" ]]; then
+                echo "Moving mod from wrong location after installation..."
+                if [[ -d "/home/container/Content/Mods/${mod_id}" ]]; then
+                    mv "/home/container/Content/Mods/${mod_id}" "/home/container/ShooterGame/Content/Mods/${mod_id}" 2>/dev/null || true
+                fi
+                rm -rf "/home/container/Content" 2>/dev/null || true
+            fi
         else
             echo "Mod ${mod_id} already installed"
         fi
