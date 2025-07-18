@@ -279,38 +279,6 @@ unset ARK_SERVER_VOLUME 2>/dev/null || true
 
 echo "arkmanager configuration setup complete."
 
-# Debug: Show arkmanager what it's working with
-echo "=== ARKMANAGER DEBUG INFO ==="
-echo "arkserverroot: ${arkserverroot}"
-echo "ARKSERVERROOT: ${ARKSERVERROOT}"
-echo "arkstUserCfgFileOverride: ${arkstUserCfgFileOverride}"
-echo "Config file exists: $(test -f /home/container/.arkmanager/config/arkmanager.cfg && echo 'YES' || echo 'NO')"
-echo "Server binary exists: $(test -f /home/container/ShooterGame/Binaries/Linux/ShooterGameServer && echo 'YES' || echo 'NO')"
-echo "Config directory exists: $(test -d /home/container/ShooterGame/Saved/Config/LinuxServer && echo 'YES' || echo 'NO')"
-echo "GameUserSettings.ini exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
-echo "Full server binary path: /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
-echo "arkmanager expects binary at: ${arkserverroot}/ShooterGame/Binaries/Linux/ShooterGameServer"
-echo "arkmanager config path: ${arkserverroot}/${arkserverdir}/Saved/Config/LinuxServer/GameUserSettings.ini"
-echo "Expected config exists: $(test -f /home/container/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
-echo "ShooterGame config exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
-echo "Listing actual Saved directories:"
-ls -la /home/container/Saved/Config/LinuxServer/ 2>/dev/null || echo "Directory not found"
-echo "============================="
-
-# Test what arkmanager is actually using for paths
-echo "=== ARKMANAGER PATH TEST ==="
-echo "Checking for existing arkmanager configs..."
-find /home/container -name "*.cfg" -type f 2>/dev/null | head -10 || echo "No existing configs found"
-echo "Symlink status: $(ls -la /home/container/.arkmanager.cfg 2>/dev/null || echo 'No symlink found')"
-echo "Testing configuration with specific instance..."
-./arkmanager printconfig 2>&1 || echo "printconfig failed"
-echo "Testing server status..."
-./arkmanager status 2>/dev/null | head -5 || echo "status check failed"
-echo "=== PATH DEBUGGING ==="
-echo "Checking for path duplication issues..."
-./arkmanager printconfig 2>/dev/null | grep -E "(GameUserSettings|Game\.ini|arkserverroot)" || echo "No config found"
-echo "============================="
-
 # ===============================================================================
 # CRON SETUP
 # ===============================================================================
