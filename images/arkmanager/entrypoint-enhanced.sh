@@ -400,12 +400,15 @@ monitor_server_status() {
         # Check if server is online
         if echo "${status_output}" | grep -q "Server online:.*Yes"; then
             if [[ "${server_online}" == "false" ]]; then
+                # Force a newline before status output to separate from prompt
+                echo ""
                 log_success "=== SERVER STATUS UPDATE ==="
                 # Display each line of status output with proper formatting
                 while IFS= read -r line; do
                     [[ -n "$line" ]] && log_info "$line"
                 done <<< "${status_output}"
                 log_success "============================"
+                echo ""  # Add blank line after status
                 server_online=true
                 # Exit monitoring after showing status once
                 break
