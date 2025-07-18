@@ -97,6 +97,7 @@ echo "Setting up arkmanager configuration..."
 # Clean up any existing arkmanager configs that might conflict
 echo "Cleaning up conflicting configs..."
 rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
+rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
 rm -f /home/container/.config/arkmanager/instances/*.cfg 2>/dev/null || true
 
 # Create arkmanager configuration directories
