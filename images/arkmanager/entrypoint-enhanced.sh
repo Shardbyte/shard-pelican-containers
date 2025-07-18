@@ -74,7 +74,7 @@ export TZ
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
 export INTERNAL_IP
 
-log_ark "Enhanced ARK Manager for Pelican"
+log_ark "Enhanced ARK: Survival Evolved Server for Pelican"
 
 # ===============================================================================
 # DIRECTORY INITIALIZATION
@@ -231,7 +231,7 @@ arkNoPortDecrement="true"
 # BACKUP CONFIGURATION
 # ===============================================================================
 arkbackupcompress="true"
-arkwarnminutes="30"
+arkwarnminutes="5"
 arkprecisewarn="true"
 arkBackupPostCommand="${BACKUP_POST_COMMAND:-echo 'Backup Complete!'}"
 arkMaxBackupSizeMB="${MAX_BACKUP_SIZE_MB:-500}"
