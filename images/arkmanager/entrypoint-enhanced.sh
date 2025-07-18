@@ -47,13 +47,15 @@ fi
 # Create config directory and default files to prevent arkmanager errors
 echo "Creating ARK config directory and default files..."
 mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
+mkdir -p "/home/container/Saved/Config/LinuxServer"
 
+# Create configs in ShooterGame directory (actual ARK location)
 if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]]; then
     cat > "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" << 'EOF'
 [/script/shootergame.shootergamemode]
 
 EOF
-    echo "Created default Game.ini"
+    echo "Created default Game.ini in ShooterGame"
 fi
 
 if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
@@ -61,7 +63,18 @@ if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSetting
 [ServerSettings]
 
 EOF
-    echo "Created default GameUserSettings.ini"
+    echo "Created default GameUserSettings.ini in ShooterGame"
+fi
+
+# Create symlinks where arkmanager expects them (root Saved directory)
+if [[ ! -f "/home/container/Saved/Config/LinuxServer/Game.ini" ]]; then
+    ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini"
+    echo "Created symlink for Game.ini"
+fi
+
+if [[ ! -f "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
+    ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini"
+    echo "Created symlink for GameUserSettings.ini"
 fi
 
 # ===============================================================================
@@ -249,6 +262,11 @@ echo "Config directory exists: $(test -d /home/container/ShooterGame/Saved/Confi
 echo "GameUserSettings.ini exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
 echo "Full server binary path: /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
 echo "arkmanager expects binary at: ${arkserverroot}/ShooterGame/Binaries/Linux/ShooterGameServer"
+echo "arkmanager config path: ${arkserverroot}/${arkserverdir}/Saved/Config/LinuxServer/GameUserSettings.ini"
+echo "Expected config exists: $(test -f /home/container/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
+echo "ShooterGame config exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
+echo "Listing actual Saved directories:"
+ls -la /home/container/Saved/Config/LinuxServer/ 2>/dev/null || echo "Directory not found"
 echo "============================="
 
 # Test what arkmanager is actually using for paths
