@@ -24,7 +24,7 @@
         "files": "{}",
         "startup": "{\n    \"done\": \"The server is now running\"\n}",
         "logs": "{}",
-        "stop": "^C"
+        "stop": "./arkmanager stop"
     },
     "scripts": {
         "installation": {
