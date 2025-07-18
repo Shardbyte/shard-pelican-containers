@@ -81,6 +81,10 @@ fi
 # ARK TOOLS INSTALLATION
 # ===============================================================================
 
+# Create arkmanager directories first (before installation)
+echo "Creating arkmanager directory structure..."
+mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
+
 if command -v arkmanager >/dev/null 2>&1; then
     echo "Ark Server Tools already installed"
 else
@@ -120,12 +124,10 @@ rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 
 # Clean up unnecessary arkmanager files and directories
 echo "Cleaning up unnecessary files and directories..."
+rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
-
-# Create arkmanager configuration directories
-mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
 
 # Create single user configuration file with all necessary settings
 cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
@@ -325,8 +327,8 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
                 echo "Moving mod ${mod_id} to correct location..."
                 mv "/home/container/Content/Mods/${mod_id}" "/home/container/ShooterGame/Content/Mods/${mod_id}"
                 # Clean up empty directory if it exists
-                rmdir "/home/container/Content/Mods" 2>/dev/null || true
-                rmdir "/home/container/Content" 2>/dev/null || true
+                rm -rf "/home/container/Content/Mods" 2>/dev/null || true
+                rm -rf "/home/container/Content" 2>/dev/null || true
             fi
         else
             echo "Mod ${mod_id} already installed"
