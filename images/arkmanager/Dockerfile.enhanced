@@ -37,7 +37,7 @@ ENV USER=container \
     PRE_UPDATE_BACKUP="false" \
     BACKUP_POST_COMMAND="" \
     BRANCH="master" \
-    STARTUP="start main"
+    STARTUP="start"
 
 # ===============================================================================
 # SYSTEM SETUP
