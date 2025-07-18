@@ -98,8 +98,7 @@ install_datadir="/home/container/.arkmanager"
 # ===============================================================================
 arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
-arkserveropts=""
-arkserverdir="/home/container"
+arkbackupdir="/home/container/backup"
 servicename="arkserv"
 
 # ===============================================================================
@@ -150,7 +149,6 @@ arkNoPortDecrement="true"
 # ===============================================================================
 # BACKUP CONFIGURATION
 # ===============================================================================
-arkbackupdir="/home/container/backup"
 arkbackupcompress="true"
 arkwarnminutes="30"
 arkprecisewarn="true"
