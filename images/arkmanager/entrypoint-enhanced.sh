@@ -442,27 +442,5 @@ fi
 
 log_server "Starting server with command: ${MODIFIED_STARTUP}"
 
-# Execute the startup command and wait for it to complete
-${MODIFIED_STARTUP} &
-SERVER_PID=$!
-
-# Function to handle shutdown signals
-shutdown_handler() {
-    log_warning "Received shutdown signal, stopping ARK server gracefully..."
-    ./arkmanager stop --saveworld --warn 2>/dev/null || true
-    wait $SERVER_PID
-    exit 0
-}
-
-# Set up signal handlers for graceful shutdown
-trap shutdown_handler SIGTERM SIGINT
-
-# Wait for the server process and handle exit
-wait $SERVER_PID
-SERVER_EXIT_CODE=$?
-
-# Kill the status monitor if it's still running
-kill $STATUS_MONITOR_PID 2>/dev/null || true
-
-log_info "ARK server process exited with code $SERVER_EXIT_CODE"
-exit $SERVER_EXIT_CODE
+# Execute the startup command and handle exit properly
+exec ${MODIFIED_STARTUP}
