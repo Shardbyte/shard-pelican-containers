@@ -100,10 +100,10 @@ rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.config/arkmanager/instances/*.cfg 2>/dev/null || true
 
 # Create arkmanager configuration directories
-mkdir -p /home/container/.config/arkmanager/instances /home/container/logs
+mkdir -p /home/container/.config/arkmanager/custom /home/container/.config/arkmanager/instances /home/container/logs
 
 # Create single user configuration file with all necessary settings
-cat > /home/container/.arkmanager.cfg << 'EOF'
+cat > /home/container/.config/arkmanager/custom/arkmanager.cfg << 'EOF'
 # ===============================================================================
 # INSTANCE CONFIGURATION
 # ===============================================================================
@@ -215,11 +215,11 @@ progressDisplayType="spinner"
 EOF
 
 # Set proper ownership
-chown container:container /home/container/.arkmanager.cfg
+chown container:container /home/container/.config/arkmanager/custom/arkmanager.cfg
 
 # Set environment variables
 export arkserverroot="/home/container"
-export arkstUserCfgFileOverride="/home/container/.arkmanager.cfg"
+export arkstUserCfgFileOverride="/home/container/.config/arkmanager/custom/arkmanager.cfg"
 export arkSingleInstance="true"
 export arkserverdir="/home/container"
 export ARKSERVERROOT="/home/container"
@@ -231,7 +231,7 @@ echo "=== ARKMANAGER DEBUG INFO ==="
 echo "arkserverroot: ${arkserverroot}"
 echo "ARKSERVERROOT: ${ARKSERVERROOT}"
 echo "arkstUserCfgFileOverride: ${arkstUserCfgFileOverride}"
-echo "Config file exists: $(test -f /home/container/.arkmanager.cfg && echo 'YES' || echo 'NO')"
+echo "Config file exists: $(test -f /home/container/.config/arkmanager/custom/arkmanager.cfg && echo 'YES' || echo 'NO')"
 echo "Server binary exists: $(test -f /home/container/ShooterGame/Binaries/Linux/ShooterGameServer && echo 'YES' || echo 'NO')"
 echo "Config directory exists: $(test -d /home/container/ShooterGame/Saved/Config/LinuxServer && echo 'YES' || echo 'NO')"
 echo "GameUserSettings.ini exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
