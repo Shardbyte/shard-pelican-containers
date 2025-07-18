@@ -116,10 +116,10 @@ echo "Setting up arkmanager configuration..."
 echo "Cleaning up conflicting configs..."
 rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
+rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 
 # Clean up unnecessary arkmanager files and directories
 echo "Cleaning up unnecessary files and directories..."
-rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
