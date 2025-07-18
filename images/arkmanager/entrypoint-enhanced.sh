@@ -126,7 +126,7 @@ arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
-arkserverdir="/home/container"
+arkserverdir="."
 
 # ===============================================================================
 # STEAMCMD CONFIGURATION
@@ -230,7 +230,7 @@ ln -sf /home/container/.config/arkmanager/custom/arkmanager.cfg /home/container/
 export arkserverroot="/home/container"
 export arkstUserCfgFileOverride="/home/container/.config/arkmanager/custom/arkmanager.cfg"
 export arkSingleInstance="true"
-export arkserverdir="/home/container"
+export arkserverdir="."
 export ARKSERVERROOT="/home/container"
 
 # Clear any problematic environment variables that might cause path duplication
