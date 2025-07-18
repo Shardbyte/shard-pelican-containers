@@ -94,6 +94,11 @@ fi
 
 echo "Setting up arkmanager configuration..."
 
+# Clean up any existing arkmanager configs that might conflict
+echo "Cleaning up conflicting configs..."
+rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
+rm -f /home/container/.config/arkmanager/instances/*.cfg 2>/dev/null || true
+
 # Create arkmanager configuration directories
 mkdir -p /home/container/.config/arkmanager/instances /home/container/logs
 
@@ -236,7 +241,10 @@ echo "============================="
 
 # Test what arkmanager is actually using for paths
 echo "=== ARKMANAGER PATH TEST ==="
-./arkmanager checkconfig main || echo "Config check failed"
+echo "Checking for existing arkmanager configs..."
+find /home/container -name "*.cfg" -type f 2>/dev/null | head -10 || echo "No existing configs found"
+echo "Testing printconfig..."
+./arkmanager printconfig main 2>/dev/null | head -20 || echo "printconfig failed"
 echo "============================="
 
 # ===============================================================================
