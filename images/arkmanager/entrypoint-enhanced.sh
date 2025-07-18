@@ -69,7 +69,7 @@ if command -v arkmanager >/dev/null 2>&1; then
     echo "ARK Server Tools already installed"
 else
     echo "Installing ARK Server Tools..."
-    curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install 2>/dev/null || true
+    curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install >/dev/null 2>&1 || true
 
     # Verify installation and set up symlinks
     if [[ -f "/home/container/bin/arkmanager" ]]; then
