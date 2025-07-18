@@ -77,14 +77,12 @@ else
         mv "/home/container/bin/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/usr/local/bin/arkmanager" 2>/dev/null || true
         echo "ARK Server Tools installed successfully"
     elif [[ -f "/home/container/arkmanager" ]]; then
         # Move existing arkmanager to new location
         mv "/home/container/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/usr/local/bin/arkmanager" 2>/dev/null || true
         echo "ARK Server Tools installed successfully"
     else
         echo "Failed to install ARK Server Tools - binary not found" >&2
@@ -256,6 +254,17 @@ export arkstUserCfgFileOverride="/home/container/.arkmanager/config/arkmanager.c
 export arkSingleInstance="true"
 export arkserverdir="."
 export ARKSERVERROOT="/home/container"
+
+# Create function to allow 'arkmanager' command without ./ prefix
+arkmanager() {
+    if [[ "$PWD" == "/home/container" ]]; then
+        ./arkmanager "$@"
+    else
+        echo "arkmanager function only works from /home/container directory" >&2
+        return 1
+    fi
+}
+export -f arkmanager
 
 # Clear any problematic environment variables that might cause path duplication
 unset ARK_SERVER_VOLUME 2>/dev/null || true
