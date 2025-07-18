@@ -4,18 +4,22 @@
         "version": "PLCN_v1",
         "update_url": null
     },
-    "exported_at": "2025-07-18T02:54:19+00:00",
+    "exported_at": "2025-07-18T17:42:47+00:00",
     "name": "ARK Manager Enhanced",
     "author": "saint@shardbyte.com",
     "uuid": "48a46f4f-a9bd-4003-a460-b27840394162",
     "description": "Enhanced ARK Server with arkmanager and shard-containers features for Pterodactyl",
-    "tags": ["ark", "survival", "arkmanager"],
+    "tags": [
+        "ark",
+        "survival",
+        "arkmanager"
+    ],
     "features": [],
     "docker_images": {
-        "Shardbyte Enhanced": "shardbyte/arkmanager:enhanced"
+        "Shardbyte Enhanced": "shardbyte\/arkmanager:enhanced"
     },
     "file_denylist": [],
-    "startup": "start main",
+    "startup": "start",
     "config": {
         "files": "{}",
         "startup": "{\n    \"done\": \"The server is now running\"\n}",
@@ -24,12 +28,211 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\r\n#################################################\r\n# Copyright (c) Shardbyte. All Rights Reserved. #\r\n# SPDX-License-Identifier: MIT                  #\r\n#################################################\r\n# ARK Server Preparation Script\r\n# Server Files: /mnt/server\r\n# Image to install with is 'ghcr.io/shardbyte/installers:debian'\r\n# \r\n# This script only prepares the directory structure.\r\n# The actual ARK server installation is handled by arkmanager\r\n# during container startup for better reliability and integration.\r\n\r\necho \"Preparing ARK server directory structure...\"\r\n\r\n# Create basic directory structure\r\nmkdir -p /mnt/server/.arkmanager/bin\r\nmkdir -p /mnt/server/.arkmanager/config\r\nmkdir -p /mnt/server/.arkmanager/libexec\r\nmkdir -p /mnt/server/.arkmanager/data\r\nmkdir -p /mnt/server/logs\r\nmkdir -p /mnt/server/backup\r\nmkdir -p /mnt/server/staging\r\n\r\n# Install SteamCMD for arkmanager to use\r\necho \"Installing SteamCMD for arkmanager...\"\r\ncd /tmp\r\nmkdir -p /mnt/server/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C /mnt/server/steamcmd\r\n\r\n# Create Steam SDK directories for ARK\r\nmkdir -p /mnt/server/.steam/sdk32\r\nmkdir -p /mnt/server/.steam/sdk64\r\ncp -v /mnt/server/steamcmd/linux32/steamclient.so /mnt/server/.steam/sdk32/steamclient.so 2>/dev/null || true\r\ncp -v /mnt/server/steamcmd/linux64/steamclient.so /mnt/server/.steam/sdk64/steamclient.so 2>/dev/null || true\r\n\r\n# Set proper ownership\r\nchown -R root:root /mnt/server\r\n\r\necho \"-----------------------------------------\"\r\necho \"Directory structure prepared.\"\r\necho \"ARK server will be installed by arkmanager on first startup.\"\r\necho \"-----------------------------------------\"",
-            "container": "ghcr.io/shardbyte/installers:debian",
+            "script": "#!\/bin\/bash\r\n#################################################\r\n# Copyright (c) Shardbyte. All Rights Reserved. #\r\n# SPDX-License-Identifier: MIT                  #\r\n#################################################\r\n# ARK Server Installation Script\r\n# Server Files: \/mnt\/server\r\n# Image to install with is 'ghcr.io\/shardbyte\/installers:debian'\r\n\r\nif [ \"${STEAM_USER}\" == \"\" ]; then\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nfi\r\n\r\ncd \/tmp\r\nmkdir -p \/mnt\/server\/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https:\/\/steamcdn-a.akamaihd.net\/client\/installer\/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/steamcmd\r\n\r\nmkdir -p \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\nmkdir -p \/mnt\/server\/steamapps\r\ncd \/mnt\/server\/steamcmd\r\n\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\n\r\n.\/steamcmd.sh +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} +force_install_dir \/mnt\/server +app_update ${SRCDS_APPID} $( [[ -z ${SRCDS_BETAID} ]] || printf %s \"-beta ${SRCDS_BETAID}\" ) ${EXTRA_FLAGS} validate +quit\r\n\r\nmkdir -p \/mnt\/server\/.steam\/sdk32\r\ncp -v linux32\/steamclient.so ..\/.steam\/sdk32\/steamclient.so\r\n\r\nmkdir -p \/mnt\/server\/.steam\/sdk64\r\ncp -v linux64\/steamclient.so ..\/.steam\/sdk64\/steamclient.so\r\n\r\ncd \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\nln -sf ..\/..\/..\/..\/..\/..\/Steam\/steamapps steamapps\r\ncd \/mnt\/server\r\n\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "ghcr.io\/shardbyte\/installers:debian",
             "entrypoint": "bash"
         }
     },
     "variables": [
+        {
+            "sort": 6,
+            "name": "Admin Password",
+            "description": "Admin password for server management",
+            "env_variable": "ADMIN_PASSWORD",
+            "default_value": "changeMEplease",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "min:8",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 18,
+            "name": "Branch",
+            "description": "arkmanager branch to use",
+            "env_variable": "BRANCH",
+            "default_value": "master",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": [
+                "required",
+                "string"
+            ]
+        },
+        {
+            "sort": 17,
+            "name": "Debug Mode",
+            "description": "Enable debug logging",
+            "env_variable": "DEBUG",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 9,
+            "name": "Game Client Port",
+            "description": "Port for game client connections",
+            "env_variable": "GAME_CLIENT_PORT",
+            "default_value": "7777",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 3,
+            "name": "Server Map",
+            "description": "ARK Server Map",
+            "env_variable": "MAP",
+            "default_value": "TheIsland",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 7,
+            "name": "Max Players",
+            "description": "Maximum number of players allowed on the server",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "20",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1",
+                "max:100"
+            ]
+        },
+        {
+            "sort": 13,
+            "name": "Mods",
+            "description": "Comma-separated list of mod IDs to install",
+            "env_variable": "MODS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ]
+        },
+        {
+            "sort": 15,
+            "name": "Pre-Update Backup",
+            "description": "Create backup before updating",
+            "env_variable": "PRE_UPDATE_BACKUP",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 12,
+            "name": "RCON Port",
+            "description": "Port for RCON remote administration",
+            "env_variable": "RCON_PORT",
+            "default_value": "27020",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 11,
+            "name": "Server List Port",
+            "description": "Port for server list queries",
+            "env_variable": "SERVER_LIST_PORT",
+            "default_value": "27015",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 5,
+            "name": "Server Password",
+            "description": "Password to join the server (leave empty for no password)",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 8,
+            "name": "PvE Mode",
+            "description": "Enable PvE mode (Player vs Environment)",
+            "env_variable": "SERVER_PVE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 16,
+            "name": "Timezone",
+            "description": "Server timezone (e.g., UTC, America\/New_York)",
+            "env_variable": "SERVER_TZ",
+            "default_value": "UTC",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 4,
+            "name": "Session Name",
+            "description": "Server name displayed in server browser",
+            "env_variable": "SESSION_NAME",
+            "default_value": "Pterodactyl ARK Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:100"
+            ]
+        },
         {
             "sort": 1,
             "name": "Steam App ID",
@@ -38,7 +241,10 @@
             "default_value": "376030",
             "user_viewable": true,
             "user_editable": false,
-            "rules": "required|numeric"
+            "rules": [
+                "required",
+                "numeric"
+            ]
         },
         {
             "sort": 2,
@@ -48,167 +254,39 @@
             "default_value": "",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|string"
+            "rules": [
+                "nullable",
+                "string"
+            ]
         },
         {
             "sort": 10,
-            "name": "Server Map",
-            "description": "ARK Server Map",
-            "env_variable": "MAP",
-            "default_value": "TheIsland",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:50"
-        },
-        {
-            "sort": 11,
-            "name": "Session Name",
-            "description": "Server name displayed in server browser",
-            "env_variable": "SESSION_NAME",
-            "default_value": "Pterodactyl ARK Server",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:100"
-        },
-        {
-            "sort": 12,
-            "name": "Server Password",
-            "description": "Password to join the server (leave empty for no password)",
-            "env_variable": "SERVER_PASSWORD",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "nullable|string|max:50"
-        },
-        {
-            "sort": 13,
-            "name": "Admin Password",
-            "description": "Admin password for server management",
-            "env_variable": "ADMIN_PASSWORD",
-            "default_value": "changeMEplease",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|min:8|max:50"
-        },
-        {
-            "sort": 14,
-            "name": "Max Players",
-            "description": "Maximum number of players allowed on the server",
-            "env_variable": "MAX_PLAYERS",
-            "default_value": "20",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|numeric|min:1|max:100"
-        },
-        {
-            "sort": 15,
-            "name": "PvE Mode",
-            "description": "Enable PvE mode (Player vs Environment)",
-            "env_variable": "SERVER_PVE",
-            "default_value": "false",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|in:true,false"
-        },
-        {
-            "sort": 20,
-            "name": "Mods",
-            "description": "Comma-separated list of mod IDs to install",
-            "env_variable": "MODS",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "nullable|string"
-        },
-        {
-            "sort": 30,
-            "name": "Game Client Port",
-            "description": "Port for game client connections",
-            "env_variable": "GAME_CLIENT_PORT",
-            "default_value": "7778",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|numeric|min:1024|max:65535"
-        },
-        {
-            "sort": 31,
-            "name": "Server List Port",
-            "description": "Port for server list queries",
-            "env_variable": "SERVER_LIST_PORT",
-            "default_value": "27015",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|numeric|min:1024|max:65535"
-        },
-        {
-            "sort": 32,
-            "name": "RCON Port",
-            "description": "Port for RCON remote administration",
-            "env_variable": "RCON_PORT",
-            "default_value": "27020",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|numeric|min:1024|max:65535"
-        },
-        {
-            "sort": 33,
             "name": "UDP Socket Port",
             "description": "UDP socket port for game communications",
             "env_variable": "UDP_SOCKET_PORT",
             "default_value": "7778",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|numeric|min:1024|max:65535"
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
         },
         {
-            "sort": 40,
+            "sort": 14,
             "name": "Update on Start",
             "description": "Automatically update server and mods on startup",
             "env_variable": "UPDATE_ON_START",
             "default_value": "false",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|in:true,false"
-        },
-        {
-            "sort": 41,
-            "name": "Pre-Update Backup",
-            "description": "Create backup before updating",
-            "env_variable": "PRE_UPDATE_BACKUP",
-            "default_value": "false",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|in:true,false"
-        },
-        {
-            "sort": 50,
-            "name": "Timezone",
-            "description": "Server timezone (e.g., UTC, America/New_York)",
-            "env_variable": "TZ",
-            "default_value": "UTC",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:50"
-        },
-        {
-            "sort": 51,
-            "name": "Debug Mode",
-            "description": "Enable debug logging",
-            "env_variable": "DEBUG",
-            "default_value": "false",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|in:true,false"
-        },
-        {
-            "sort": 60,
-            "name": "Branch",
-            "description": "arkmanager branch to use",
-            "env_variable": "BRANCH",
-            "default_value": "master",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": "required|string"
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
         }
     ]
 }

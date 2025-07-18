@@ -18,26 +18,26 @@ LABEL author="Shardbyte" \
 
 ENV USER=container \
     HOME=/home/container \
-    ARK_SERVER_VOLUME="/home/container" \
-    ARK_TOOLS_DIR="/home/container/.arkmanager" \
+    BRANCH="master" \
+    STARTUP="start" \
     TZ="UTC" \
     DEBUG="false" \
+    ARK_SERVER_VOLUME="/home/container" \
+    ARK_TOOLS_DIR="/home/container/.arkmanager" \
     SESSION_NAME="Pterodactyl ARK Server" \
     MAP="TheIsland" \
-    SERVER_PASSWORD="" \
     SERVER_PVE="false" \
-    ADMIN_PASSWORD="changeMEplease" \
     MAX_PLAYERS="20" \
-    MODS="" \
-    GAME_CLIENT_PORT="7778" \
-    SERVER_LIST_PORT="27015" \
-    RCON_PORT="27020" \
-    UDP_SOCKET_PORT="7778" \
+    SERVER_PASSWORD="" \
+    ADMIN_PASSWORD="changeMEplease" \
     UPDATE_ON_START="false" \
     PRE_UPDATE_BACKUP="false" \
     BACKUP_POST_COMMAND="" \
-    BRANCH="master" \
-    STARTUP="start"
+    MODS="" \
+    GAME_CLIENT_PORT="7777" \
+    UDP_SOCKET_PORT="7778" \
+    SERVER_LIST_PORT="27015" \
+    RCON_PORT="27020"
 
 # ===============================================================================
 # SYSTEM SETUP
@@ -47,25 +47,25 @@ RUN dpkg --add-architecture i386 \
     && apt update \
     && apt -y upgrade \
     && apt install -y --no-install-recommends \
+        jq \
         sed \
         tar \
+        perl \
         lsof \
-        bzip2 \
         gzip \
         curl \
         cron \
         nano \
+        bzip2 \
         rsync \
-        perl \
+        procps \
         locales \
+        iproute2 \
+        net-tools \
         libc6-i386 \
         lib32gcc-s1 \
         lib32stdc++6 \
         ca-certificates \
-        procps \
-        jq \
-        iproute2 \
-        net-tools \
     && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 \
@@ -74,13 +74,16 @@ RUN dpkg --add-architecture i386 \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/* \
-    && rm -rf /var/log/* \
     && rm -rf /var/cache/apt/* \
+    && rm -rf /var/cache/debconf/* \
     && rm -rf /usr/share/doc/* \
     && rm -rf /usr/share/man/* \
     && rm -rf /usr/share/info/* \
-    && rm -rf /usr/share/locale/* \
-    && find /var/lib/dpkg -type f -name "*.md5sums" -delete
+    && rm -rf /usr/share/pixmaps/* \
+    && rm -rf /usr/share/applications/* \
+    && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en*' -exec rm -rf {} + \
+    && find /var/lib/dpkg -type f -name "*.md5sums" -delete \
+    && find /var/log -type f -name "*.log" -delete
 
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
