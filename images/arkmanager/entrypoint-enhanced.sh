@@ -292,17 +292,6 @@ echo "Checking for path duplication issues..."
 echo "============================="
 
 # ===============================================================================
-# SYMBOLIC LINKS SETUP
-# ===============================================================================
-
-# Create symbolic links to configuration files
-[[ -L "/home/container/Game.ini" ]] || [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]] || \
-    ln -sf ./ShooterGame/Saved/Config/LinuxServer/Game.ini "/home/container/Game.ini"
-
-[[ -L "/home/container/GameUserSettings.ini" ]] || [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]] || \
-    ln -sf ./ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini "/home/container/GameUserSettings.ini"
-
-# ===============================================================================
 # CRON SETUP
 # ===============================================================================
 
