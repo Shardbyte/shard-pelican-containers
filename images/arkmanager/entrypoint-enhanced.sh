@@ -135,6 +135,14 @@ cat > /home/container/.config/arkmanager/instances/main.cfg << 'EOF'
 # CRITICAL: Set the ARK server root directory (Pterodactyl container root)
 arkserverroot="/home/container"
 
+# ARK server executable path (relative to arkserverroot)
+arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
+
+# SteamCMD configuration (Pterodactyl installs steamcmd in the server directory)
+steamcmdroot="/home/container/steamcmd"
+steamcmdexec="steamcmd.sh"
+steamcmd_user="container"
+
 # Server map and basic settings
 serverMap="${MAP:-TheIsland}"
 ark_Port=${GAME_CLIENT_PORT:-7778}
@@ -167,8 +175,37 @@ EOF
 echo "Creating arkmanager global configuration..."
 if [[ -f "/home/container/conf.d/arkmanager.cfg" ]]; then
     cp /home/container/conf.d/arkmanager.cfg /home/container/.config/arkmanager/arkmanager.cfg
+    echo "Copied arkmanager.cfg template"
 else
-    echo "Warning: arkmanager.cfg template not found"
+    echo "Warning: arkmanager.cfg template not found, creating basic config"
+    cat > /home/container/.config/arkmanager/arkmanager.cfg << 'EOF'
+# ===============================================================================
+# ARK Server Manager Global Configuration
+# Basic configuration for Pterodactyl container environment
+# ===============================================================================
+
+# Default instance
+defaultinstance="main"
+
+# SteamCMD configuration
+steamcmdroot="/home/container/steamcmd"
+steamcmdexec="steamcmd.sh"
+steamcmd_user="container"
+
+# Installation paths
+install_bindir="/home/container/bin"
+install_libexecdir="/home/container/.arkmanager"
+install_datadir="/home/container/.arkmanager"
+
+# Default paths
+arkserverroot="/home/container"
+logdir="/home/container/logs"
+arkbackupdir="/home/container/backup"
+
+# Steam app IDs
+appid=376030
+mod_appid=346110
+EOF
 fi
 
 # Create user config override to ensure paths are correct
@@ -234,7 +271,25 @@ if command -v arkmanager >/dev/null 2>&1; then
     arkmanager status main 2>&1 | head -10 || echo "Status command failed"
 
     echo "Testing arkmanager configuration..."
-    arkmanager printconfig main 2>&1 | grep -E "arkserverroot|configfile" || echo "Config test failed"
+    arkmanager printconfig main 2>&1 | grep -E "arkserverroot|configfile|arkserverexec" || echo "Config test failed"
+
+    echo "Validating server binary..."
+    if [[ -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]]; then
+        echo "  ✓ ARK server binary found at expected location"
+    else
+        echo "  ✗ ARK server binary NOT found - server may need installation"
+        echo "    Expected: /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
+        ls -la /home/container/ShooterGame/Binaries/Linux/ 2>/dev/null || echo "    Directory does not exist"
+    fi
+
+    echo "Validating SteamCMD..."
+    if [[ -f "/home/container/steamcmd/steamcmd.sh" ]]; then
+        echo "  ✓ SteamCMD found at expected location"
+    else
+        echo "  ✗ SteamCMD NOT found - may need installation"
+        echo "    Expected: /home/container/steamcmd/steamcmd.sh"
+        ls -la /home/container/steamcmd/ 2>/dev/null || echo "    Directory does not exist"
+    fi
 else
     echo "arkmanager command not found, will test later"
 fi
@@ -324,6 +379,28 @@ fi
 echo "======================================="
 echo "Starting ARK Server..."
 echo "======================================="
+
+# Validate server prerequisites before starting
+echo "Validating server prerequisites..."
+
+# Check if ARK server binary exists
+if [[ ! -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]]; then
+    echo "ERROR: ARK server binary not found!"
+    echo "Expected location: /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
+    echo "Please ensure the server is properly installed via Pterodactyl's egg installer."
+    echo "Available files in ShooterGame/Binaries/Linux/:"
+    ls -la /home/container/ShooterGame/Binaries/Linux/ 2>/dev/null || echo "Directory does not exist"
+    exit 1
+fi
+
+# Check if SteamCMD exists (required for arkmanager)
+if [[ ! -f "/home/container/steamcmd/steamcmd.sh" ]]; then
+    echo "WARNING: SteamCMD not found at expected location"
+    echo "Expected: /home/container/steamcmd/steamcmd.sh"
+    echo "arkmanager may have issues with updates, but server should still start"
+fi
+
+echo "Prerequisites validated successfully!"
 
 # Execute the startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
