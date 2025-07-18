@@ -112,17 +112,17 @@ echo "Cleaning up conflicting configs..."
 rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
 
-# Clean up unnecessary arkmanager files
-echo "Cleaning up unnecessary files..."
+# Clean up unnecessary arkmanager files and directories
+echo "Cleaning up unnecessary files and directories..."
 rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
-rm -f /home/container/.local/share/arkmanager/arkmanager-uninstall.sh 2>/dev/null || true
-rm -rf /home/container/.config/arkmanager/instances 2>/dev/null || true
+rm -rf /home/container/.local 2>/dev/null || true
+rm -rf /home/container/.config/arkmanager 2>/dev/null || true
 
 # Create arkmanager configuration directories
-mkdir -p /home/container/.config/arkmanager/custom /home/container/logs
+mkdir -p /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs
 
 # Create single user configuration file with all necessary settings
-cat > /home/container/.config/arkmanager/custom/arkmanager.cfg << 'EOF'
+cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
 # ===============================================================================
 # INSTANCE CONFIGURATION
 # ===============================================================================
@@ -134,8 +134,8 @@ arkSingleInstance="true"
 # ===============================================================================
 arkstChannel="${BRANCH:-master}"
 install_bindir="/home/container/bin"
-install_libexecdir="/home/container/.arkmanager"
-install_datadir="/home/container/.arkmanager"
+install_libexecdir="/home/container/.arkmanager/libexec"
+install_datadir="/home/container/.arkmanager/data"
 
 # ===============================================================================
 # SERVER PATHS
@@ -242,14 +242,14 @@ arkmod_path="/home/container/ShooterGame/Content/Mods"
 EOF
 
 # Set proper ownership
-chown container:container /home/container/.config/arkmanager/custom/arkmanager.cfg
+chown container:container /home/container/.arkmanager/config/arkmanager.cfg
 
-# Create symlink from old location to new custom config for compatibility
-ln -sf /home/container/.config/arkmanager/custom/arkmanager.cfg /home/container/.arkmanager.cfg
+# Create symlink from old location to new config for compatibility
+ln -sf /home/container/.arkmanager/config/arkmanager.cfg /home/container/.arkmanager.cfg
 
 # Set environment variables
 export arkserverroot="/home/container"
-export arkstUserCfgFileOverride="/home/container/.config/arkmanager/custom/arkmanager.cfg"
+export arkstUserCfgFileOverride="/home/container/.arkmanager/config/arkmanager.cfg"
 export arkSingleInstance="true"
 export arkserverdir="."
 export ARKSERVERROOT="/home/container"
@@ -264,7 +264,7 @@ echo "=== ARKMANAGER DEBUG INFO ==="
 echo "arkserverroot: ${arkserverroot}"
 echo "ARKSERVERROOT: ${ARKSERVERROOT}"
 echo "arkstUserCfgFileOverride: ${arkstUserCfgFileOverride}"
-echo "Config file exists: $(test -f /home/container/.config/arkmanager/custom/arkmanager.cfg && echo 'YES' || echo 'NO')"
+echo "Config file exists: $(test -f /home/container/.arkmanager/config/arkmanager.cfg && echo 'YES' || echo 'NO')"
 echo "Server binary exists: $(test -f /home/container/ShooterGame/Binaries/Linux/ShooterGameServer && echo 'YES' || echo 'NO')"
 echo "Config directory exists: $(test -d /home/container/ShooterGame/Saved/Config/LinuxServer && echo 'YES' || echo 'NO')"
 echo "GameUserSettings.ini exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
