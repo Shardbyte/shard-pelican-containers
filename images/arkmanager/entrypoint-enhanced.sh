@@ -121,8 +121,10 @@ rm -f /home/container/Manifest_*.txt 2>/dev/null || true
 rm -f /home/container/PackageInfo.bin 2>/dev/null || true
 rm -f /home/container/SteamCMDInstall.sh 2>/dev/null || true
 
-# Create single user configuration file with all necessary settings
-cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
+# Create single user configuration file with all necessary settings (only if it doesn't exist)
+if [[ ! -f "/home/container/.arkmanager/config/arkmanager.cfg" ]]; then
+    echo "Creating initial arkmanager configuration..."
+    cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
 # ===============================================================================
 # INSTANCE CONFIGURATION
 # ===============================================================================
@@ -246,8 +248,12 @@ arkmod_install_path="/home/container/ShooterGame/Content/Mods"
 # ===============================================================================
 EOF
 
-# Set proper ownership
-chown container:container /home/container/.arkmanager/config/arkmanager.cfg
+    # Set proper ownership
+    chown container:container /home/container/.arkmanager/config/arkmanager.cfg
+    echo "Initial arkmanager configuration created."
+else
+    echo "Using existing arkmanager configuration."
+fi
 
 # Create symlink from old location to new config for compatibility
 ln -sf /home/container/.arkmanager/config/arkmanager.cfg /home/container/.arkmanager.cfg
