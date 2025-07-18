@@ -337,6 +337,37 @@ may_update() {
 may_update
 
 # ===============================================================================
+# MEMORY MONITORING
+# ===============================================================================
+
+# Function to monitor memory usage and run arkmanager status at 4GB
+monitor_memory() {
+    local target_memory_mb=4096  # 4GB in MB
+    local check_interval=30      # Check every 30 seconds
+
+    while true; do
+        # Get memory usage in MB (RSS - Resident Set Size)
+        local memory_usage_kb
+        memory_usage_kb=$(awk '/VmRSS/ {print $2}' /proc/self/status 2>/dev/null || echo "0")
+        local memory_usage_mb=$((memory_usage_kb / 1024))
+
+        if [[ ${memory_usage_mb} -ge ${target_memory_mb} ]]; then
+            echo "Memory usage reached ${memory_usage_mb}MB (target: ${target_memory_mb}MB)"
+            echo "Running arkmanager status..."
+            ./arkmanager status || echo "arkmanager status failed"
+            break
+        fi
+
+        sleep ${check_interval}
+    done
+}
+
+# Start memory monitoring in background
+monitor_memory &
+MEMORY_MONITOR_PID=$!
+echo "Memory monitoring started (PID: ${MEMORY_MONITOR_PID}) - will run 'arkmanager status' at 4GB usage"
+
+# ===============================================================================
 # STARTUP EXECUTION
 # ===============================================================================
 
@@ -356,6 +387,25 @@ create_config_symlinks
 
 # Execute startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
+
+# Build additional command line arguments based on configuration
+additional_args=()
+
+if [[ "${ENABLE_CROSSPLAY:-false}" == "true" ]]; then
+    additional_args+=('--arkopt,-crossplay')
+    echo "Crossplay enabled"
+fi
+
+if [[ "${DISABLE_BATTLEYE:-false}" == "true" ]]; then
+    additional_args+=('--arkopt,-NoBattlEye')
+    echo "BattlEye disabled"
+fi
+
+# Add additional arguments to startup command if any exist
+if [[ ${#additional_args[@]} -gt 0 ]]; then
+    MODIFIED_STARTUP="${MODIFIED_STARTUP} ${additional_args[*]}"
+fi
+
 echo ":/home/container$ ${MODIFIED_STARTUP}"
 
 ${MODIFIED_STARTUP}

@@ -1,0 +1,320 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PLCN_v1",
+        "update_url": null
+    },
+    "exported_at": "2025-07-15T10:10:10+00:00",
+    "name": "ARK Manager Enhanced v4",
+    "author": "containers@shardbyte.com",
+    "uuid": "fpc60359-d51f-4c73-8e04-12fc4v473295",
+    "description": "Enhanced ARK Server with ARKManager features.",
+    "tags": [
+        "ark",
+        "survival",
+        "arkmanager"
+    ],
+    "features": [],
+    "docker_images": {
+        "Shardbyte Enhanced": "shardbyte\/arkmanager:enhanced"
+    },
+    "file_denylist": [],
+    "startup": "start",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"The server is now running\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n#################################################\r\n# Copyright (c) Shardbyte. All Rights Reserved. #\r\n# SPDX-License-Identifier: MIT                  #\r\n#################################################\r\n# SteamCMD Installation Script\r\n# Server Files: \/mnt\/server\r\n# Image: 'ghcr.io\/shardbyte\/installers:debian'\r\n\r\nif [ \"${STEAM_USER}\" == \"\" ]; then\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nfi\r\n\r\ncd \/tmp\r\nmkdir -p \/mnt\/server\/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https:\/\/steamcdn-a.akamaihd.net\/client\/installer\/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/steamcmd\r\n\r\nmkdir -p \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\nmkdir -p \/mnt\/server\/steamapps\r\ncd \/mnt\/server\/steamcmd\r\n\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\n\r\n.\/steamcmd.sh +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} +force_install_dir \/mnt\/server +app_update ${SRCDS_APPID} $( [[ -z ${SRCDS_BETAID} ]] || printf %s \"-beta ${SRCDS_BETAID}\" ) ${EXTRA_FLAGS} validate +quit\r\n\r\nmkdir -p \/mnt\/server\/.steam\/sdk32\r\ncp -v linux32\/steamclient.so ..\/.steam\/sdk32\/steamclient.so\r\n\r\nmkdir -p \/mnt\/server\/.steam\/sdk64\r\ncp -v linux64\/steamclient.so ..\/.steam\/sdk64\/steamclient.so\r\n\r\ncd \/mnt\/server\/Engine\/Binaries\/ThirdParty\/SteamCMD\/Linux\r\nln -sf ..\/..\/..\/..\/..\/..\/Steam\/steamapps steamapps\r\ncd \/mnt\/server\r\n\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "ghcr.io\/shardbyte\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "sort": 1,
+            "name": "Steam App ID",
+            "description": "ARK Server Steam Application ID",
+            "env_variable": "SRCDS_APPID",
+            "default_value": "376030",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": [
+                "required",
+                "numeric"
+            ]
+        },
+        {
+            "sort": 2,
+            "name": "Beta Branch (Optional)",
+            "description": "Steam beta branch for experimental features (e.g., 'experimental' for latest test builds). Leave empty for stable release.",
+            "env_variable": "SRCDS_BETAID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ]
+        },
+        {
+            "sort": 3,
+            "name": "World Map",
+            "description": "The ARK map to load (TheIsland, Ragnarok, Valguero, Genesis, etc.). This determines the game world players will explore.",
+            "env_variable": "MAP",
+            "default_value": "TheIsland",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 4,
+            "name": "Server Display Name",
+            "description": "The name shown in the server browser that players will see when looking for servers to join.",
+            "env_variable": "SESSION_NAME",
+            "default_value": "Pterodactyl ARK Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:100"
+            ]
+        },
+        {
+            "sort": 5,
+            "name": "Server Join Password",
+            "description": "Password required for players to join the server. Leave empty for a public server that anyone can join.",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 6,
+            "name": "Admin/RCON Password",
+            "description": "Password for server administration and RCON access. Used for remote server management and admin commands.",
+            "env_variable": "ADMIN_PASSWORD",
+            "default_value": "changeMEplease",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "min:8",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 7,
+            "name": "Maximum Players",
+            "description": "Maximum number of players that can be connected to the server simultaneously.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "20",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1",
+                "max:100"
+            ]
+        },
+        {
+            "sort": 8,
+            "name": "PvE Mode (Player vs Environment)",
+            "description": "Enable PvE mode to disable player vs player combat. Players can only fight creatures, not each other.",
+            "env_variable": "SERVER_PVE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 9,
+            "name": "Game Client Port",
+            "description": "Primary port for player connections to the game server. Must be open in firewall and port forwarded.",
+            "env_variable": "GAME_CLIENT_PORT",
+            "default_value": "7777",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 10,
+            "name": "UDP Socket Port",
+            "description": "Secondary port for game communications and data transfer. Usually Game Client Port + 1.",
+            "env_variable": "UDP_SOCKET_PORT",
+            "default_value": "7778",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 11,
+            "name": "Server Browser Port",
+            "description": "Port for server browser queries. Allows players to find your server in the server list.",
+            "env_variable": "SERVER_LIST_PORT",
+            "default_value": "27015",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 12,
+            "name": "RCON Management Port",
+            "description": "Port for remote administration via RCON tools. Used for server management and automated tasks.",
+            "env_variable": "RCON_PORT",
+            "default_value": "27020",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "numeric",
+                "min:1024",
+                "max:65535"
+            ]
+        },
+        {
+            "sort": 13,
+            "name": "Workshop Mods",
+            "description": "Comma-separated list of Steam Workshop mod IDs to install (e.g., '731604991,889745138'). Find mod IDs in the workshop URL.",
+            "env_variable": "MODS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ]
+        },
+        {
+            "sort": 14,
+            "name": "Auto-Update Server",
+            "description": "Automatically check for and install server/mod updates when the server starts. Recommended for keeping mods current.",
+            "env_variable": "UPDATE_ON_START",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 15,
+            "name": "Backup Before Updates",
+            "description": "Create a backup of your server world before applying updates. Helps protect against update issues.",
+            "env_variable": "PRE_UPDATE_BACKUP",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 16,
+            "name": "Server Timezone",
+            "description": "Timezone for server logs and scheduled tasks (e.g., 'America/New_York', 'Europe/London', 'UTC').",
+            "env_variable": "SERVER_TZ",
+            "default_value": "UTC",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:50"
+            ]
+        },
+        {
+            "sort": 17,
+            "name": "Debug Logging",
+            "description": "Enable detailed debug logging for troubleshooting server issues. Only enable when diagnosing problems.",
+            "env_variable": "DEBUG",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 18,
+            "name": "ARKManager Version",
+            "description": "Version branch of ARKManager to use (master=stable, develop=latest features). Advanced users only.",
+            "env_variable": "BRANCH",
+            "default_value": "master",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": [
+                "required",
+                "string"
+            ]
+        },
+        {
+            "sort": 19,
+            "name": "Enable Crossplay",
+            "description": "Allow crossplay between PC (Steam/Epic) and console players (Xbox/PlayStation). Requires compatible client versions.",
+            "env_variable": "ENABLE_CROSSPLAY",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        },
+        {
+            "sort": 20,
+            "name": "Disable Anti-Cheat (BattlEye)",
+            "description": "Disable BattlEye anti-cheat system. Required for some mods but reduces cheat protection. Use with caution.",
+            "env_variable": "DISABLE_BATTLEYE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ]
+        }
+    ]
+}

@@ -37,7 +37,9 @@ ENV USER=container \
     GAME_CLIENT_PORT="7777" \
     UDP_SOCKET_PORT="7778" \
     SERVER_LIST_PORT="27015" \
-    RCON_PORT="27020"
+    RCON_PORT="27020" \
+    ENABLE_CROSSPLAY="false" \
+    DISABLE_BATTLEYE="false"
 
 # ===============================================================================
 # SYSTEM SETUP
