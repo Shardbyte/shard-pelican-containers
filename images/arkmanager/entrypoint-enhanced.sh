@@ -119,50 +119,123 @@ fi
 
 echo "Setting up arkmanager configuration..."
 
-# Initialize ARK tools directory if needed
-if [[ ! -f "${ARK_TOOLS_DIR}/arkmanager.cfg" ]]; then
-    echo "Initializing ARK tools configuration..."
+# Ensure proper arkmanager configuration directories exist
+mkdir -p /etc/arkmanager/instances
+mkdir -p /home/container/.config/arkmanager/instances
+mkdir -p /home/container/logs
 
-    # Move default arkmanager config to persistent location if it exists
-    if [[ -d "/home/container/.config/arkmanager" ]] && [[ ! -L "/home/container/.config/arkmanager" ]]; then
-        echo "Moving arkmanager config to persistent location"
-        cp -r "/home/container/.config/arkmanager"/* "${ARK_TOOLS_DIR}/" 2>/dev/null || echo "No existing config to copy"
-    fi
+# CRITICAL: Create the proper instance configuration file
+# This is where arkmanager looks for instance-specific settings
+echo "Creating arkmanager instance configuration..."
+cat > /etc/arkmanager/instances/main.cfg << 'EOF'
+# ===============================================================================
+# ARK Server Manager Instance Configuration - main
+# Generated for Pterodactyl container environment
+# ===============================================================================
+
+# CRITICAL: Set the ARK server root directory (Pterodactyl container root)
+arkserverroot="/home/container"
+
+# Server map and basic settings
+serverMap="${MAP:-TheIsland}"
+ark_Port=${GAME_CLIENT_PORT:-7778}
+ark_QueryPort=${SERVER_LIST_PORT:-27015}
+ark_RCONPort=${RCON_PORT:-32330}
+ark_MaxPlayers=${MAX_PLAYERS:-50}
+
+# Session configuration
+ark_SessionName="${SESSION_NAME:-ARK Server}"
+ark_ServerPassword="${SERVER_PASSWORD:-}"
+
+# Mod configuration
+ark_GameModIds="${MODS:-}"
+
+# Server behavior
+arkAutoUpdateOnStart=${UPDATE_ON_START:-false}
+arkBackupPreUpdate=${PRE_UPDATE_BACKUP:-false}
+
+# Alternative save directory (required for Pterodactyl)
+ark_AltSaveDirectoryName="SavedArks"
+
+# Backup configuration
+arkbackupdir="/home/container/backup"
+
+# Log directory
+logdir="/home/container/logs"
+EOF
+
+# Create the global configuration file
+echo "Creating arkmanager global configuration..."
+if [[ -f "/home/container/conf.d/arkmanager.cfg" ]]; then
+    cp /home/container/conf.d/arkmanager.cfg /etc/arkmanager/arkmanager.cfg
+else
+    echo "Warning: arkmanager.cfg template not found"
 fi
 
-# Copy configuration files from templates
-copy_missing_file() {
-    local source="${1}"
-    local destination="${2}"
+# Create user config override to ensure paths are correct
+echo "Creating user configuration override..."
+cat > /home/container/.arkmanager.cfg << 'EOF'
+# ===============================================================================
+# ARK Server Manager User Configuration Override
+# Force correct paths for Pterodactyl container
+# ===============================================================================
 
-    if [[ ! -f "${destination}" ]]; then
-        mkdir -p "$(dirname "${destination}")"
-        if [[ -f "${source}" ]]; then
-            cp -a "${source}" "${destination}"
-            echo "Copied ${source} to ${destination}"
-        else
-            echo "WARNING: Template file ${source} not found"
-        fi
-    fi
-}
+# Force the correct server root for this container
+arkserverroot="/home/container"
 
-# Copy configuration templates if they exist
-copy_missing_file "${TEMPLATE_DIRECTORY}/arkmanager.cfg" "${ARK_TOOLS_DIR}/arkmanager.cfg"
-copy_missing_file "${TEMPLATE_DIRECTORY}/arkmanager-user.cfg" "${ARK_TOOLS_DIR}/instances/main.cfg"
-copy_missing_file "${TEMPLATE_DIRECTORY}/crontab" "${ARK_SERVER_VOLUME}/crontab"
+# Instance configuration
+defaultinstance="main"
+
+# User-specific settings
+steamcmd_user="container"
+
+# Ensure logs go to the right place
+logdir="/home/container/logs"
+EOF
+
+# Set proper permissions for all configuration files
+chown -R container:container /etc/arkmanager/
+chown container:container /home/container/.arkmanager.cfg
 
 # Set arkmanager environment variables to ensure proper paths
+unset ARK_ROOT ARK_HOME ARKROOT  # Clear any conflicting environment variables
 export arkserverroot="/home/container"
 export ARK_SERVER_DIR="/home/container"
 export ARK_INSTALL_DIR="/home/container"
+export ARKSERVERROOT="/home/container"
 
-# Create symlink for arkmanager configuration
-echo "Creating configuration symlinks..."
-if [[ -e "/home/container/.config/arkmanager" ]] || [[ -L "/home/container/.config/arkmanager" ]]; then
-    rm -rf "/home/container/.config/arkmanager" 2>/dev/null || true
+echo "arkmanager configuration setup complete."
+
+# ===============================================================================
+# ARKMANAGER DEBUGGING AND VERIFICATION
+# ===============================================================================
+
+echo "Verifying arkmanager configuration..."
+
+# Show what configuration files exist
+echo "Configuration files:"
+echo "  Global config: /etc/arkmanager/arkmanager.cfg $(test -f /etc/arkmanager/arkmanager.cfg && echo 'EXISTS' || echo 'MISSING')"
+echo "  Instance config: /etc/arkmanager/instances/main.cfg $(test -f /etc/arkmanager/instances/main.cfg && echo 'EXISTS' || echo 'MISSING')"
+echo "  User config: /home/container/.arkmanager.cfg $(test -f /home/container/.arkmanager.cfg && echo 'EXISTS' || echo 'MISSING')"
+
+# Show environment variables
+echo "Environment variables:"
+echo "  arkserverroot=${arkserverroot}"
+echo "  ARK_SERVER_DIR=${ARK_SERVER_DIR}"
+echo "  ARKSERVERROOT=${ARKSERVERROOT}"
+
+# Test arkmanager if available
+if command -v arkmanager >/dev/null 2>&1; then
+    echo "Testing arkmanager status..."
+    arkmanager status main 2>&1 | head -10 || echo "Status command failed"
+
+    echo "Testing arkmanager configuration..."
+    arkmanager printconfig main 2>&1 | grep -E "arkserverroot|configfile" || echo "Config test failed"
+else
+    echo "arkmanager command not found, will test later"
 fi
-mkdir -p "/home/container/.config"
-ln -sf "${ARK_TOOLS_DIR}" "/home/container/.config/arkmanager"
+
+echo "arkmanager configuration and verification complete."
 
 # ===============================================================================
 # SYMBOLIC LINKS SETUP
