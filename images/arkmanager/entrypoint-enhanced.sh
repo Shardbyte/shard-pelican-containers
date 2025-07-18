@@ -223,6 +223,9 @@ EOF
 # Set proper ownership
 chown container:container /home/container/.config/arkmanager/custom/arkmanager.cfg
 
+# Create symlink from old location to new custom config for compatibility
+ln -sf /home/container/.config/arkmanager/custom/arkmanager.cfg /home/container/.arkmanager.cfg
+
 # Set environment variables
 export arkserverroot="/home/container"
 export arkstUserCfgFileOverride="/home/container/.config/arkmanager/custom/arkmanager.cfg"
@@ -252,8 +255,11 @@ echo "============================="
 echo "=== ARKMANAGER PATH TEST ==="
 echo "Checking for existing arkmanager configs..."
 find /home/container -name "*.cfg" -type f 2>/dev/null | head -10 || echo "No existing configs found"
-echo "Testing printconfig..."
-./arkmanager printconfig main 2>/dev/null | head -20 || echo "printconfig failed"
+echo "Symlink status: $(ls -la /home/container/.arkmanager.cfg 2>/dev/null || echo 'No symlink found')"
+echo "Testing configuration with specific instance..."
+./arkmanager printconfig main 2>&1 || echo "printconfig main failed"
+echo "Testing general configuration..."
+./arkmanager printconfig 2>&1 || echo "printconfig failed"
 echo "=== PATH DEBUGGING ==="
 echo "Checking for path duplication issues..."
 ./arkmanager printconfig main 2>/dev/null | grep -E "(GameUserSettings|Game\.ini|arkserverroot)" || echo "No config found"
