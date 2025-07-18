@@ -125,6 +125,7 @@ arkserverroot="/home/container"
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
+arkserverdir="/home/container"
 
 # ===============================================================================
 # STEAMCMD CONFIGURATION
@@ -194,6 +195,10 @@ logdir="/home/container/logs"
 arkStagingDir="/home/container/staging"
 progressDisplayType="spinner"
 
+# Fix path issues - ensure arkmanager uses correct base paths
+arkopt_GameUserSettingsIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini"
+
 # ===============================================================================
 # CLUSTER CONFIGURATION
 # ===============================================================================
@@ -224,6 +229,9 @@ export arkSingleInstance="true"
 export arkserverdir="/home/container"
 export ARKSERVERROOT="/home/container"
 
+# Clear any problematic environment variables that might cause path duplication
+unset ARK_SERVER_VOLUME 2>/dev/null || true
+
 echo "arkmanager configuration setup complete."
 
 # Debug: Show arkmanager what it's working with
@@ -245,6 +253,9 @@ echo "Checking for existing arkmanager configs..."
 find /home/container -name "*.cfg" -type f 2>/dev/null | head -10 || echo "No existing configs found"
 echo "Testing printconfig..."
 ./arkmanager printconfig main 2>/dev/null | head -20 || echo "printconfig failed"
+echo "=== PATH DEBUGGING ==="
+echo "Checking for path duplication issues..."
+./arkmanager printconfig main 2>/dev/null | grep -E "(GameUserSettings|Game\.ini|arkserverroot)" || echo "No config found"
 echo "============================="
 
 # ===============================================================================
