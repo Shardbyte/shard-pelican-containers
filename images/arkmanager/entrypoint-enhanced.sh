@@ -5,8 +5,7 @@
 #################################################
 
 # ===============================================================================
-# Enhanced ARK Manager Entrypoint for Pelican
-# Incorporates shard-containers directory structure and configuration management
+# Enhanced ARK: Survival Evolved Entrypoint for Pelican with ARKManager Features
 # ===============================================================================
 
 set -e

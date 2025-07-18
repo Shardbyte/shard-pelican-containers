@@ -8,7 +8,7 @@ FROM debian:bookworm-slim
 LABEL author="Shardbyte" \
       maintainer="containers@shardbyte.com" \
       org.opencontainers.image.source="https://github.com/Shardbyte/shard-pelican-containers" \
-      org.opencontainers.image.description="Enhanced ARK Manager for Pterodactyl with shard-containers structure" \
+      org.opencontainers.image.description="ARK: Survival Evolved Server for Pelican with ARKManager Features" \
       org.opencontainers.image.title="arkmanager-enhanced" \
       org.opencontainers.image.licenses="MIT"
 
@@ -24,7 +24,7 @@ ENV USER=container \
     DEBUG="false" \
     ARK_SERVER_VOLUME="/home/container" \
     ARK_TOOLS_DIR="/home/container/.arkmanager" \
-    SESSION_NAME="Pterodactyl ARK Server" \
+    SESSION_NAME="Pelican ARK Server" \
     MAP="TheIsland" \
     SERVER_PVE="false" \
     MAX_PLAYERS="20" \

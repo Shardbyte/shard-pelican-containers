@@ -7,8 +7,8 @@
     "exported_at": "2025-07-15T10:10:10+00:00",
     "name": "ARK Manager Enhanced v4",
     "author": "containers@shardbyte.com",
-    "uuid": "fpc60359-d51f-4c73-8e04-12fc4v473295",
-    "description": "Enhanced ARK Server with ARKManager features.",
+    "uuid": "fpc60359-d51f-4c73-8e04-12fc4v473k95",
+    "description": "ARK: Survival Evolved Server for Pelican with ARKManager Features",
     "tags": [
         "ark",
         "survival",
@@ -16,7 +16,7 @@
     ],
     "features": [],
     "docker_images": {
-        "Shardbyte Enhanced": "shardbyte\/arkmanager:enhanced"
+        "Shardbyte ARKManager": "shardbyte\/arkmanager:enhanced"
     },
     "file_denylist": [],
     "startup": "start",
@@ -50,7 +50,7 @@
         {
             "sort": 2,
             "name": "Beta Branch (Optional)",
-            "description": "Steam beta branch for experimental features (e.g., 'experimental' for latest test builds). Leave empty for stable release.",
+            "description": "Steam beta branch (e.g., 'preaquatica'). Leave empty for stable release.",
             "env_variable": "SRCDS_BETAID",
             "default_value": "",
             "user_viewable": true,
@@ -63,7 +63,7 @@
         {
             "sort": 3,
             "name": "World Map",
-            "description": "The ARK map to load (TheIsland, Ragnarok, Valguero, Genesis, etc.). This determines the game world players will explore.",
+            "description": "The ARK map to load (TheIsland, TheCenter, Ragnarok, ScorchedEarth_P, Aberration_P, Extinction, Valguero_P, Genesis, CrystalIsles, Gen2, Fjordur). This determines the game world players will explore.",
             "env_variable": "MAP",
             "default_value": "TheIsland",
             "user_viewable": true,
@@ -79,7 +79,7 @@
             "name": "Server Display Name",
             "description": "The name shown in the server browser that players will see when looking for servers to join.",
             "env_variable": "SESSION_NAME",
-            "default_value": "Pterodactyl ARK Server",
+            "default_value": "Pelican ARK Server",
             "user_viewable": true,
             "user_editable": true,
             "rules": [
@@ -104,8 +104,8 @@
         },
         {
             "sort": 6,
-            "name": "Admin/RCON Password",
-            "description": "Password for server administration and RCON access. Used for remote server management and admin commands.",
+            "name": "Admin Password",
+            "description": "Password for server administration. Used for remote server management and admin commands.",
             "env_variable": "ADMIN_PASSWORD",
             "default_value": "changeMEplease",
             "user_viewable": true,
@@ -134,7 +134,7 @@
         },
         {
             "sort": 8,
-            "name": "PvE Mode (Player vs Environment)",
+            "name": "PvE Mode",
             "description": "Enable PvE mode to disable player vs player combat. Players can only fight creatures, not each other.",
             "env_variable": "SERVER_PVE",
             "default_value": "false",
@@ -249,20 +249,6 @@
         },
         {
             "sort": 16,
-            "name": "Server Timezone",
-            "description": "Timezone for server logs and scheduled tasks (e.g., 'America/New_York', 'Europe/London', 'UTC').",
-            "env_variable": "SERVER_TZ",
-            "default_value": "UTC",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "string",
-                "max:50"
-            ]
-        },
-        {
-            "sort": 17,
             "name": "Debug Logging",
             "description": "Enable detailed debug logging for troubleshooting server issues. Only enable when diagnosing problems.",
             "env_variable": "DEBUG",
@@ -276,20 +262,7 @@
             ]
         },
         {
-            "sort": 18,
-            "name": "ARKManager Version",
-            "description": "Version branch of ARKManager to use (master=stable, develop=latest features). Advanced users only.",
-            "env_variable": "BRANCH",
-            "default_value": "master",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": [
-                "required",
-                "string"
-            ]
-        },
-        {
-            "sort": 19,
+            "sort": 17,
             "name": "Enable Crossplay",
             "description": "Allow crossplay between PC (Steam/Epic) and console players (Xbox/PlayStation). Requires compatible client versions.",
             "env_variable": "ENABLE_CROSSPLAY",
@@ -303,7 +276,7 @@
             ]
         },
         {
-            "sort": 20,
+            "sort": 18,
             "name": "Disable Anti-Cheat (BattlEye)",
             "description": "Disable BattlEye anti-cheat system. Required for some mods but reduces cheat protection. Use with caution.",
             "env_variable": "DISABLE_BATTLEYE",
