@@ -161,6 +161,7 @@ install_datadir="/home/container/.arkmanager/data"
 # SERVER PATHS
 # ===============================================================================
 arkserverroot="/home/container"
+arkserverdir=""
 arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
@@ -284,7 +285,7 @@ ln -sf /home/container/.arkmanager/config/arkmanager.cfg /home/container/.arkman
 export arkserverroot="/home/container"
 export arkstUserCfgFileOverride="/home/container/.arkmanager/config/arkmanager.cfg"
 export arkSingleInstance="true"
-export arkserverdir="."
+export arkserverdir=""
 export ARKSERVERROOT="/home/container"
 
 # Create function to allow 'arkmanager' command without ./ prefix
