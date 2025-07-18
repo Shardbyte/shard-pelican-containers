@@ -11,6 +11,51 @@
 
 set -e
 
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;37m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# Logging functions with colors
+log() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${WHITE}$1${NC}"
+}
+
+log_info() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${BLUE}⁂${NC} ${WHITE}$1${NC}"
+}
+
+log_success() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${GREEN}✔${NC} ${WHITE}$1${NC}"
+}
+
+log_warning() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${YELLOW}⚠${NC} ${YELLOW}$1${NC}"
+}
+
+log_error() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${RED}✘${NC} ${RED}$1${NC}"
+}
+
+log_mod() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${PURPLE}◉${NC} ${WHITE}$1${NC}"
+}
+
+log_server() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${GREEN}✪${NC} ${WHITE}$1${NC}"
+}
+
+log_ark() {
+    echo -e "${CYAN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} ${BOLD}${GREEN}🦕${NC} ${WHITE}$1${NC}"
+}
+
 # ===============================================================================
 # DEBUG CONFIGURATION
 # ===============================================================================
@@ -30,7 +75,7 @@ export TZ
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
 export INTERNAL_IP
 
-echo "Enhanced ARK Manager for Pelican"
+log_ark "Enhanced ARK Manager for Pelican"
 
 # ===============================================================================
 # DIRECTORY INITIALIZATION
@@ -49,12 +94,12 @@ mkdir -p "/home/container/Saved/Config/LinuxServer"
 create_config_symlinks() {
     if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/Game.ini" ]]; then
         ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini"
-        echo "Created symlink for Game.ini"
+        log_success "Created symlink for Game.ini"
     fi
 
     if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
         ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini"
-        echo "Created symlink for GameUserSettings.ini"
+        log_success "Created symlink for GameUserSettings.ini"
     fi
 }
 
@@ -66,9 +111,9 @@ create_config_symlinks() {
 mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs /home/container/staging
 
 if command -v arkmanager >/dev/null 2>&1; then
-    echo "ARK Server Tools already installed"
+    log_success "ARK Server Tools already installed"
 else
-    echo "Installing ARK Server Tools..."
+    log_info "Installing ARK Server Tools..."
     curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install >/dev/null 2>&1 || true
 
     # Verify installation and set up symlinks
@@ -77,15 +122,15 @@ else
         mv "/home/container/bin/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        echo "ARK Server Tools installed successfully"
+        log_success "ARK Server Tools installed successfully"
     elif [[ -f "/home/container/arkmanager" ]]; then
         # Move existing arkmanager to new location
         mv "/home/container/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        echo "ARK Server Tools installed successfully"
+        log_success "ARK Server Tools installed successfully"
     else
-        echo "Failed to install ARK Server Tools - binary not found" >&2
+        log_error "Failed to install ARK Server Tools - binary not found"
         exit 1
     fi
 fi
@@ -113,7 +158,7 @@ rm -f /home/container/SteamCMDInstall.sh 2>/dev/null || true
 
 # Create single user configuration file with all necessary settings (only if it doesn't exist)
 if [[ ! -f "/home/container/.arkmanager/config/arkmanager.cfg" ]]; then
-    echo "Creating ARKManager configuration..."
+    log_info "Creating ARKManager configuration..."
     cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
 # ===============================================================================
 # INSTANCE CONFIGURATION
@@ -240,9 +285,9 @@ EOF
 
     # Set proper ownership
     chown container:container /home/container/.arkmanager/config/arkmanager.cfg
-    echo "ARKManager configuration created"
+    log_success "ARKManager configuration created"
 else
-    echo "Using existing ARKManager configuration"
+    log_info "Using existing ARKManager configuration"
 fi
 
 # Create symlink from old location to new config for compatibility
@@ -283,37 +328,37 @@ unset ARK_SERVER_VOLUME 2>/dev/null || true
 
 # Install mods if specified
 if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
-    echo "Installing mods: ${MODS}"
+    log_mod "Installing mods: ${MODS}"
     # Ensure mods directory exists in the correct location
     mkdir -p "/home/container/ShooterGame/Content/Mods"
 
     for mod_id in ${MODS//,/ }; do
         if [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
-            echo "Installing mod ${mod_id}..."
-            ./arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
+            log_mod "Installing mod ${mod_id}..."
+            ./arkmanager installmod "${mod_id}" --verbose || log_warning "Failed to install mod ${mod_id}"
 
             # Immediate cleanup after each mod installation
             if [[ -d "/home/container/Content" ]]; then
-                echo "Moving mod from wrong location after installation..."
+                log_info "Moving mod from wrong location after installation..."
                 if [[ -d "/home/container/Content/Mods/${mod_id}" ]]; then
                     mv "/home/container/Content/Mods/${mod_id}" "/home/container/ShooterGame/Content/Mods/${mod_id}" 2>/dev/null || true
                 fi
                 rm -rf "/home/container/Content" 2>/dev/null || true
             fi
         else
-            echo "Mod ${mod_id} already installed"
+            log_mod "Mod ${mod_id} already installed"
         fi
     done
 
     # Clean up only mod-related files from staging directory
-    echo "Cleaning up mod files from staging directory..."
+    log_info "Cleaning up mod files from staging directory..."
     rm -rf "/home/container/staging/steamapps" 2>/dev/null || true
     rm -rf "/home/container/staging/workshop" 2>/dev/null || true
     rm -f "/home/container/staging"/*.mod 2>/dev/null || true
     rm -f "/home/container/staging"/mod_* 2>/dev/null || true
 
     # Final cleanup - ensure no Content directory exists
-    echo "Final cleanup of Content directory..."
+    log_info "Final cleanup of Content directory..."
     rm -rf "/home/container/Content" 2>/dev/null || true
 fi
 
@@ -327,7 +372,7 @@ may_update() {
         return 0
     fi
 
-    echo "UPDATE_ON_START is 'true' - checking for updates..."
+    log_info "UPDATE_ON_START is 'true' - checking for updates..."
 
     # Auto-update server and mods if needed, with backup
     ./arkmanager update --verbose --update-mods --backup --no-autostart
@@ -355,9 +400,9 @@ monitor_server_status() {
         # Check if server is online
         if echo "${status_output}" | grep -q "Server online:.*Yes"; then
             if [[ "${server_online}" == "false" ]]; then
-                echo "=== SERVER STATUS UPDATE ==="
+                log_success "=== SERVER STATUS UPDATE ==="
                 echo "${status_output}"
-                echo "============================"
+                log_success "============================"
                 server_online=true
             fi
         else
@@ -378,12 +423,12 @@ STATUS_MONITOR_PID=$!
 
 cd /home/container || exit 1
 
-echo "Starting ARK Server..."
+log_server "Starting ARK Server..."
 
 # Validate server binary exists
 [[ -f "/home/container/ShooterGame/Binaries/Linux/ShooterGameServer" ]] || {
-    echo "ERROR: ARK server binary not found at /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
-    echo "Please ensure the server is properly installed via Pelican's egg installer."
+    log_error "ARK server binary not found at /home/container/ShooterGame/Binaries/Linux/ShooterGameServer"
+    log_error "Please ensure the server is properly installed via Pelican's egg installer."
     exit 1
 }
 
@@ -398,12 +443,12 @@ additional_args=()
 
 if [[ "${ENABLE_CROSSPLAY:-false}" == "true" ]]; then
     additional_args+=('--arkopt,-crossplay')
-    echo "Crossplay enabled"
+    log_info "Crossplay enabled"
 fi
 
 if [[ "${DISABLE_BATTLEYE:-false}" == "true" ]]; then
     additional_args+=('--arkopt,-NoBattlEye')
-    echo "BattlEye disabled"
+    log_info "BattlEye disabled"
 fi
 
 # Add additional arguments to startup command if any exist
@@ -411,7 +456,7 @@ if [[ ${#additional_args[@]} -gt 0 ]]; then
     MODIFIED_STARTUP="${MODIFIED_STARTUP} ${additional_args[*]}"
 fi
 
-echo ":/home/container$ ${MODIFIED_STARTUP}"
+log_server "Starting server with command: ${MODIFIED_STARTUP}"
 
 ${MODIFIED_STARTUP}
 
