@@ -87,20 +87,6 @@ fi
 
 # Create config directories (server will create .ini files on first run)
 mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
-mkdir -p "/home/container/Saved/Config/LinuxServer"
-
-# Create symlinks for config files after server creates them
-create_config_symlinks() {
-    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/Game.ini" ]]; then
-        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" "/home/container/Saved/Config/LinuxServer/Game.ini"
-        log_success "Created symlink for Game.ini"
-    fi
-
-    if [[ -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]] && [[ ! -f "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
-        ln -sf "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" "/home/container/Saved/Config/LinuxServer/GameUserSettings.ini"
-        log_success "Created symlink for GameUserSettings.ini"
-    fi
-}
 
 # ===============================================================================
 # ARK TOOLS INSTALLATION
@@ -149,6 +135,7 @@ rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
+rm -rf "/home/container/Saved" 2>/dev/null || true
 
 # Clean up installation artifacts
 rm -f /home/container/Manifest_*.txt 2>/dev/null || true
@@ -438,9 +425,6 @@ log_server "Starting ARK Server..."
     log_error "Please ensure the server is properly installed via Pelican's egg installer."
     exit 1
 }
-
-# Create config symlinks if server has generated config files
-create_config_symlinks
 
 # Execute startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
