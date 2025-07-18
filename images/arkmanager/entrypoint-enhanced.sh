@@ -404,6 +404,8 @@ monitor_server_status() {
                 echo "${status_output}"
                 log_success "============================"
                 server_online=true
+                # Exit monitoring after showing status once
+                break
             fi
         else
             server_online=false
