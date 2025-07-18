@@ -101,6 +101,10 @@ arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 arkbackupdir="/home/container/backup"
 servicename="arkserv"
 
+# Instance-specific override (this should fix the path issue)
+main_arkserverroot="/home/container"
+main_arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
+
 # ===============================================================================
 # STEAMCMD CONFIGURATION
 # ===============================================================================
