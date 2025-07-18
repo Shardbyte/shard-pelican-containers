@@ -219,12 +219,41 @@ cat > /home/container/.arkmanager.cfg << 'EOF'
 # Force the correct server root for this container
 arkserverroot="/home/container"
 
-# Instance configuration
-defaultinstance="main"
-configfile_main="/home/container/.config/arkmanager/instances/main.cfg"
+# ARK server executable path (relative to arkserverroot)
+arkserverexec="ShooterGame/Binaries/Linux/ShooterGameServer"
 
-# User-specific settings
+# SteamCMD configuration (Pterodactyl installs steamcmd in the server directory)
+steamcmdroot="/home/container/steamcmd"
+steamcmdexec="steamcmd.sh"
 steamcmd_user="container"
+
+# Instance configuration - this file IS the main instance config
+defaultinstance="main"
+arkSingleInstance="true"
+
+# Server map and basic settings
+serverMap="${MAP:-TheIsland}"
+ark_Port=${GAME_CLIENT_PORT:-7778}
+ark_QueryPort=${SERVER_LIST_PORT:-27015}
+ark_RCONPort=${RCON_PORT:-32330}
+ark_MaxPlayers=${MAX_PLAYERS:-50}
+
+# Session configuration
+ark_SessionName="${SESSION_NAME:-ARK Server}"
+ark_ServerPassword="${SERVER_PASSWORD:-}"
+
+# Mod configuration
+ark_GameModIds="${MODS:-}"
+
+# Server behavior
+arkAutoUpdateOnStart=${UPDATE_ON_START:-false}
+arkBackupPreUpdate=${PRE_UPDATE_BACKUP:-false}
+
+# Alternative save directory (required for Pterodactyl)
+ark_AltSaveDirectoryName="SavedArks"
+
+# Backup configuration
+arkbackupdir="/home/container/backup"
 
 # Ensure logs go to the right place
 logdir="/home/container/logs"
@@ -291,7 +320,20 @@ if command -v arkmanager >/dev/null 2>&1; then
         ls -la /home/container/steamcmd/ 2>/dev/null || echo "    Directory does not exist"
     fi
 else
-    echo "arkmanager command not found, will test later"
+    # Check if arkmanager exists but not in PATH
+    if [[ -f "/home/container/bin/arkmanager" ]] || [[ -f "/home/container/arkmanager" ]]; then
+        echo "arkmanager binary found but not in PATH - this is expected"
+        # Test with direct path
+        if [[ -f "/home/container/bin/arkmanager" ]]; then
+            echo "Testing arkmanager configuration with direct path..."
+            /home/container/bin/arkmanager printconfig main 2>&1 | grep -E "arkserverroot|configfile|arkserverexec" || echo "Config test failed"
+        elif [[ -f "/home/container/arkmanager" ]]; then
+            echo "Testing arkmanager configuration with direct path..."
+            /home/container/arkmanager printconfig main 2>&1 | grep -E "arkserverroot|configfile|arkserverexec" || echo "Config test failed"
+        fi
+    else
+        echo "arkmanager command not found, will test later"
+    fi
 fi
 
 echo "arkmanager configuration and verification complete."
@@ -405,6 +447,26 @@ echo "Prerequisites validated successfully!"
 # Execute the startup command
 MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
 echo ":/home/container$ ${MODIFIED_STARTUP}"
+
+# Force arkmanager to use our configuration by setting all required environment variables
+export arkstGlobalCfgFile="/home/container/.config/arkmanager/arkmanager.cfg"
+export arkstUserCfgFile="/home/container/.arkmanager.cfg"
+export arkstGlobalCfgFileOverride="/home/container/.config/arkmanager/arkmanager.cfg"
+export arkstUserCfgFileOverride="/home/container/.arkmanager.cfg"
+export arkSingleInstance="true"
+
+# Debug: Show what arkmanager should be reading
+echo "DEBUG: Configuration override environment variables:"
+echo "  arkstGlobalCfgFile=${arkstGlobalCfgFile}"
+echo "  arkstUserCfgFile=${arkstUserCfgFile}"
+echo "  arkSingleInstance=${arkSingleInstance}"
+
+# Also test the configuration before running
+echo "DEBUG: Testing configuration loading..."
+if [[ -f "/home/container/arkmanager" ]]; then
+    echo "Available arkmanager binary at /home/container/arkmanager"
+    ./arkmanager printconfig 2>&1 | head -20 || echo "printconfig failed"
+fi
 
 ${MODIFIED_STARTUP}
 
