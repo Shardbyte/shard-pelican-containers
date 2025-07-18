@@ -88,17 +88,22 @@ if command -v arkmanager >/dev/null 2>&1; then
 else
     echo "Installing Ark Server Tools..."
     if curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install; then
-        if cp /home/container/bin/arkmanager /home/container/arkmanager; then
-            echo "Ark Server Tools installation completed successfully"
+        echo "Ark Server Tools installation completed successfully"
 
-            # Create symlink for easier access
-            if [[ -f "/home/container/arkmanager" ]]; then
-                chmod +x /home/container/arkmanager
-                echo "Made arkmanager executable"
+        # Check if arkmanager was installed in bin directory
+        if [[ -f "/home/container/bin/arkmanager" ]]; then
+            # Create a symlink in the main directory for easier access
+            if [[ ! -f "/home/container/arkmanager" ]] && [[ ! -L "/home/container/arkmanager" ]]; then
+                ln -sf "/home/container/bin/arkmanager" "/home/container/arkmanager"
+                echo "Created arkmanager symlink for easier access"
             fi
+            chmod +x /home/container/bin/arkmanager
+            echo "Made arkmanager executable"
+        elif [[ -f "/home/container/arkmanager" ]]; then
+            chmod +x /home/container/arkmanager
+            echo "Made arkmanager executable"
         else
-            echo "Failed to copy arkmanager binary" >&2
-            exit 1
+            echo "WARNING: arkmanager binary not found in expected locations"
         fi
     else
         echo "Failed to install Ark Server Tools" >&2
