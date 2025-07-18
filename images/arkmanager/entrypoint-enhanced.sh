@@ -129,6 +129,12 @@ rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
 
+# Clean up installation artifacts
+echo "Cleaning up installation artifacts..."
+rm -f /home/container/Manifest_*.txt 2>/dev/null || true
+rm -f /home/container/PackageInfo.bin 2>/dev/null || true
+rm -f /home/container/SteamCMDInstall.sh 2>/dev/null || true
+
 # Create single user configuration file with all necessary settings
 cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
 # ===============================================================================
