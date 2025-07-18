@@ -206,81 +206,14 @@ cd /home/container || exit 1
 if [[ ! -f "${ARK_SERVER_VOLUME}/ShooterGame/Binaries/Linux/ShooterGameServer" ]]; then
     echo "No ARK server binary found - server may need installation via Pterodactyl"
     echo "Make sure to run server installation through Pterodactyl panel first"
-fi
-
-# Auto-update logic (compatible with Pterodactyl's steamcmd structure)
-if [[ -z ${AUTO_UPDATE} ]] || [[ "${AUTO_UPDATE}" == "1" ]]; then
-    if [[ ! -z ${SRCDS_APPID} ]]; then
-        echo "Updating server files..."
-
-        # Use Pterodactyl's steamcmd if available, fallback to container's steamcmd
-        STEAMCMD_PATH="./steamcmd/steamcmd.sh"
-        if [[ -f "${ARK_SERVER_VOLUME}/steamcmd/steamcmd.sh" ]]; then
-            STEAMCMD_PATH="${ARK_SERVER_VOLUME}/steamcmd/steamcmd.sh"
-            echo "Using Pterodactyl's steamcmd installation"
-        elif [[ -f "./steamcmd/steamcmd.sh" ]]; then
-            echo "Using container's steamcmd installation"
-        else
-            echo "No steamcmd found - skipping update"
-        fi
-
-        # SteamCMD update command (adjusted for Pterodactyl compatibility)
-        if [[ -f "${STEAMCMD_PATH}" ]]; then
-            echo "Running SteamCMD update with timeout protection..."
-
-            # Create a temporary script to run steamcmd with proper error handling
-            cat > /tmp/steamcmd_update.sh << 'EOF'
-#!/bin/bash
-# Ensure we have proper steam directory structure
-mkdir -p /home/container/.steam/sdk32
-mkdir -p /home/container/.steam/sdk64
-
-# Set HOME to ensure Steam uses the right directory
-export HOME=/home/container
-
-# Clear any existing Steam lock files that might cause issues
-rm -f /home/container/.steam/registry.vdf.lock
-rm -f /home/container/.steam/ClientRegistry.blob.lock
-
-# Run steamcmd with proper arguments
-exec "$@"
-EOF
-            chmod +x /tmp/steamcmd_update.sh
-
-            if [[ "${STEAM_USER:-anonymous}" == "anonymous" ]]; then
-                echo "Starting anonymous SteamCMD update..."
-                timeout 300 /tmp/steamcmd_update.sh ${STEAMCMD_PATH} \
-                    +force_install_dir /home/container \
-                    +login anonymous \
-                    +app_update ${SRCDS_APPID} \
-                    $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) \
-                    $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) \
-                    ${INSTALL_FLAGS} \
-                    $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) \
-                    +quit || echo "SteamCMD update completed or timed out"
-            else
-                echo "Starting authenticated SteamCMD update..."
-                timeout 300 /tmp/steamcmd_update.sh ${STEAMCMD_PATH} \
-                    +force_install_dir /home/container \
-                    +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} \
-                    +app_update ${SRCDS_APPID} \
-                    $( [[ -z ${SRCDS_BETAID} ]] || printf %s "-beta ${SRCDS_BETAID}" ) \
-                    $( [[ -z ${SRCDS_BETAPASS} ]] || printf %s "-betapassword ${SRCDS_BETAPASS}" ) \
-                    ${INSTALL_FLAGS} \
-                    $( [[ "${VALIDATE}" == "1" ]] && printf %s 'validate' ) \
-                    +quit || echo "SteamCMD update completed or timed out"
-            fi
-
-            # Clean up
-            rm -f /tmp/steamcmd_update.sh
-            echo "SteamCMD update process finished"
-        fi
-    else
-        echo "No appid set. Starting Server"
-    fi
 else
-    echo "Not updating game server as auto update was set to 0. Starting Server"
+    echo "ARK server binary found - installation looks good"
 fi
+
+# Note: Server installation and updates are handled by:
+# 1. Pterodactyl's egg installer script (install_script.sh) for initial installation
+# 2. arkmanager for ongoing updates and management
+echo "Server installation/updates will be managed by arkmanager"
 
 # ===============================================================================
 # MOD INSTALLATION
