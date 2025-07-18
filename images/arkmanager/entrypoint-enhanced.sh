@@ -111,10 +111,15 @@ echo "Setting up arkmanager configuration..."
 echo "Cleaning up conflicting configs..."
 rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
-rm -f /home/container/.config/arkmanager/instances/*.cfg 2>/dev/null || true
+
+# Clean up unnecessary arkmanager files
+echo "Cleaning up unnecessary files..."
+rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
+rm -f /home/container/.local/share/arkmanager/arkmanager-uninstall.sh 2>/dev/null || true
+rm -rf /home/container/.config/arkmanager/instances 2>/dev/null || true
 
 # Create arkmanager configuration directories
-mkdir -p /home/container/.config/arkmanager/custom /home/container/.config/arkmanager/instances /home/container/logs
+mkdir -p /home/container/.config/arkmanager/custom /home/container/logs
 
 # Create single user configuration file with all necessary settings
 cat > /home/container/.config/arkmanager/custom/arkmanager.cfg << 'EOF'
@@ -213,6 +218,9 @@ progressDisplayType="spinner"
 arkopt_GameUserSettingsIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
 arkopt_GameIniFile="/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini"
 
+# Ensure mods go to the correct location
+arkmod_path="/home/container/ShooterGame/Content/Mods"
+
 # ===============================================================================
 # CLUSTER CONFIGURATION
 # ===============================================================================
@@ -309,9 +317,25 @@ echo "============================="
 # Install mods if specified
 if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
     echo "Installing mods: ${MODS}"
+    # Ensure mods directory exists in the correct location
+    mkdir -p "/home/container/ShooterGame/Content/Mods"
+
     for mod_id in ${MODS//,/ }; do
-        [[ -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]] || \
+        if [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
+            echo "Installing mod ${mod_id}..."
             ./arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
+
+            # If mod was installed in wrong location, move it to correct location
+            if [[ -d "/home/container/Content/Mods/${mod_id}" ]] && [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
+                echo "Moving mod ${mod_id} to correct location..."
+                mv "/home/container/Content/Mods/${mod_id}" "/home/container/ShooterGame/Content/Mods/${mod_id}"
+                # Clean up empty directory if it exists
+                rmdir "/home/container/Content/Mods" 2>/dev/null || true
+                rmdir "/home/container/Content" 2>/dev/null || true
+            fi
+        else
+            echo "Mod ${mod_id} already installed"
+        fi
     done
 fi
 
