@@ -337,35 +337,42 @@ may_update() {
 may_update
 
 # ===============================================================================
-# MEMORY MONITORING
+# SERVER STATUS MONITORING
 # ===============================================================================
 
-# Function to monitor memory usage and run arkmanager status at 4GB
-monitor_memory() {
-    local target_memory_mb=4096  # 4GB in MB
-    local check_interval=30      # Check every 30 seconds
+# Function to monitor server status and display when online
+monitor_server_status() {
+    local check_interval=45     # Check every 45 seconds
+    local server_online=false
+
+    # Wait for initial startup
+    sleep ${check_interval}
 
     while true; do
-        # Get memory usage in MB (RSS - Resident Set Size)
-        local memory_usage_kb
-        memory_usage_kb=$(awk '/VmRSS/ {print $2}' /proc/self/status 2>/dev/null || echo "0")
-        local memory_usage_mb=$((memory_usage_kb / 1024))
+        # Run arkmanager status silently and capture output
+        local status_output
+        status_output=$(./arkmanager status 2>/dev/null || echo "Status check failed")
 
-        if [[ ${memory_usage_mb} -ge ${target_memory_mb} ]]; then
-            echo "Memory usage reached ${memory_usage_mb}MB (target: ${target_memory_mb}MB)"
-            echo "Running arkmanager status..."
-            ./arkmanager status || echo "arkmanager status failed"
-            break
+        # Check if server is online
+        if echo "${status_output}" | grep -q "Server online:.*Yes"; then
+            if [[ "${server_online}" == "false" ]]; then
+                echo "=== SERVER STATUS UPDATE ==="
+                echo "${status_output}"
+                echo "============================"
+                server_online=true
+            fi
+        else
+            server_online=false
         fi
 
         sleep ${check_interval}
     done
 }
 
-# Start memory monitoring in background
-monitor_memory &
-MEMORY_MONITOR_PID=$!
-echo "Memory monitoring started (PID: ${MEMORY_MONITOR_PID}) - will run 'arkmanager status' at 4GB usage"
+# Start server status monitoring in background
+monitor_server_status &
+STATUS_MONITOR_PID=$!
+echo "Server status monitoring started (PID: ${STATUS_MONITOR_PID}) - will display status when server comes online"
 
 # ===============================================================================
 # STARTUP EXECUTION
