@@ -77,12 +77,14 @@ else
         mv "/home/container/bin/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
+        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/usr/local/bin/arkmanager" 2>/dev/null || true
         echo "ARK Server Tools installed successfully"
     elif [[ -f "/home/container/arkmanager" ]]; then
         # Move existing arkmanager to new location
         mv "/home/container/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
+        ln -sf "/home/container/.arkmanager/bin/arkmanager" "/usr/local/bin/arkmanager" 2>/dev/null || true
         echo "ARK Server Tools installed successfully"
     else
         echo "Failed to install ARK Server Tools - binary not found" >&2
@@ -271,7 +273,7 @@ unset ARK_SERVER_VOLUME 2>/dev/null || true
 # ===============================================================================
 
 # Install mods if specified
-if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
+if [[ -n "${MODS:-}" ]] && command -v arkmanager >/dev/null 2>&1; then
     echo "Installing mods: ${MODS}"
     # Ensure mods directory exists in the correct location
     mkdir -p "/home/container/ShooterGame/Content/Mods"
@@ -279,7 +281,7 @@ if [[ -n "${MODS:-}" ]] && [[ -f "/home/container/arkmanager" ]]; then
     for mod_id in ${MODS//,/ }; do
         if [[ ! -d "/home/container/ShooterGame/Content/Mods/${mod_id}" ]]; then
             echo "Installing mod ${mod_id}..."
-            ./arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
+            arkmanager installmod "${mod_id}" --verbose || echo "Failed to install mod ${mod_id}"
 
             # Immediate cleanup after each mod installation
             if [[ -d "/home/container/Content" ]]; then
@@ -319,7 +321,7 @@ may_update() {
     echo "UPDATE_ON_START is 'true' - checking for updates..."
 
     # Auto-update server and mods if needed, with backup
-    ./arkmanager update --verbose --update-mods --backup --no-autostart
+    arkmanager update --verbose --update-mods --backup --no-autostart
 }
 
 may_update
@@ -339,7 +341,7 @@ monitor_server_status() {
     while true; do
         # Run arkmanager status silently and capture output
         local status_output
-        status_output=$(./arkmanager status 2>/dev/null || echo "Status check failed")
+        status_output=$(arkmanager status 2>/dev/null || echo "Status check failed")
 
         # Check if server is online
         if echo "${status_output}" | grep -q "Server online:.*Yes"; then
@@ -380,7 +382,7 @@ echo "Starting ARK Server..."
 create_config_symlinks
 
 # Execute startup command
-MODIFIED_STARTUP=$(eval echo $(echo ./arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
+MODIFIED_STARTUP=$(eval echo $(echo arkmanager ${STARTUP} --verbose | sed -e 's/{{/${/g' -e 's/}}/}/g'))
 
 # Build additional command line arguments based on configuration
 additional_args=()
