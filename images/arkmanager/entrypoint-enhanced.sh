@@ -132,7 +132,6 @@ rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
-rm -rf "/home/container/Saved" 2>/dev/null || true
 
 # Clean up installation artifacts
 rm -f /home/container/Manifest_*.txt 2>/dev/null || true
@@ -238,14 +237,6 @@ msgWarnShutdownSeconds="This ARK server will shutdown in %d seconds"
 logdir="/home/container/logs"
 arkStagingDir="/home/container/staging"
 progressDisplayType="spinner"
-
-# Fix path issues - ensure arkmanager uses correct base paths
-arkGameUserSettingsIniFile="ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
-arkGameIniFile="ShooterGame/Saved/Config/LinuxServer/Game.ini"
-
-# Ensure mods go to the correct location and use staging
-arkmod_path="/home/container/ShooterGame/Content/Mods"
-ark_ModInstallationStagingDir="/home/container/staging"
 
 # Override arkmanager's default mod download behavior
 arkmod_downloaddir="/home/container/staging"
