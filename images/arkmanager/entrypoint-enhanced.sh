@@ -44,6 +44,26 @@ if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" 
     [[ -L "/home/container/steamcmd" ]] || ln -sf "${ARK_SERVER_VOLUME}/steamcmd" "/home/container/steamcmd" 2>/dev/null || true
 fi
 
+# Create config directory and default files to prevent arkmanager errors
+echo "Creating ARK config directory and default files..."
+mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
+
+if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" ]]; then
+    cat > "/home/container/ShooterGame/Saved/Config/LinuxServer/Game.ini" << 'EOF'
+[/script/shootergame.shootergamemode]
+
+EOF
+    echo "Created default Game.ini"
+fi
+
+if [[ ! -f "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" ]]; then
+    cat > "/home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini" << 'EOF'
+[ServerSettings]
+
+EOF
+    echo "Created default GameUserSettings.ini"
+fi
+
 # ===============================================================================
 # ARK TOOLS INSTALLATION
 # ===============================================================================
