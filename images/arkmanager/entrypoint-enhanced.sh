@@ -31,13 +31,10 @@ INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "1
 export INTERNAL_IP
 
 echo "Enhanced ARK Manager for Pelican"
-echo "Server Volume: ${ARK_SERVER_VOLUME}"
 
 # ===============================================================================
 # DIRECTORY INITIALIZATION
 # ===============================================================================
-
-echo "Setting up directory structure..."
 
 # Handle Pelican's steamcmd directory structure
 if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" ]]; then
@@ -45,7 +42,6 @@ if [[ -d "/home/container/steamcmd" ]] || [[ -d "${ARK_SERVER_VOLUME}/steamcmd" 
 fi
 
 # Create config directories (server will create .ini files on first run)
-echo "Creating ARK config directories..."
 mkdir -p "/home/container/ShooterGame/Saved/Config/LinuxServer"
 mkdir -p "/home/container/Saved/Config/LinuxServer"
 
@@ -67,14 +63,13 @@ create_config_symlinks() {
 # ===============================================================================
 
 # Create arkmanager directories first (before installation)
-echo "Creating arkmanager directory structure..."
 mkdir -p /home/container/.arkmanager/bin /home/container/.arkmanager/config /home/container/.arkmanager/libexec /home/container/.arkmanager/data /home/container/logs /home/container/staging
 
 if command -v arkmanager >/dev/null 2>&1; then
-    echo "Ark Server Tools already installed"
+    echo "ARK Server Tools already installed"
 else
-    echo "Installing Ark Server Tools..."
-    curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install || true
+    echo "Installing ARK Server Tools..."
+    curl -sL https://raw.githubusercontent.com/arkmanager/ark-server-tools/master/netinstall.sh | bash -s container --me --perform-user-install --yes-i-really-want-to-perform-a-user-install 2>/dev/null || true
 
     # Verify installation and set up symlinks
     if [[ -f "/home/container/bin/arkmanager" ]]; then
@@ -82,15 +77,15 @@ else
         mv "/home/container/bin/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        echo "Ark Server Tools installed and moved to .arkmanager/bin"
+        echo "ARK Server Tools installed successfully"
     elif [[ -f "/home/container/arkmanager" ]]; then
         # Move existing arkmanager to new location
         mv "/home/container/arkmanager" "/home/container/.arkmanager/bin/arkmanager" 2>/dev/null || true
         chmod +x /home/container/.arkmanager/bin/arkmanager
         ln -sf "/home/container/.arkmanager/bin/arkmanager" "/home/container/arkmanager"
-        echo "Ark Server Tools installed and moved to .arkmanager/bin"
+        echo "ARK Server Tools installed successfully"
     else
-        echo "Failed to install Ark Server Tools - binary not found" >&2
+        echo "Failed to install ARK Server Tools - binary not found" >&2
         exit 1
     fi
 fi
@@ -99,31 +94,26 @@ fi
 # ARKMANAGER CONFIGURATION SETUP
 # ===============================================================================
 
-echo "Setting up arkmanager configuration..."
-
 # Clean up any existing arkmanager configs that might conflict
-echo "Cleaning up conflicting configs..."
 rm -f /home/container/.arkmanager.cfg.NEW 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg 2>/dev/null || true
 rm -f /home/container/.arkmanager.cfg.example 2>/dev/null || true
 rm -f /home/container/version.txt 2>/dev/null || true
 
 # Clean up unnecessary arkmanager files and directories
-echo "Cleaning up unnecessary files and directories..."
 rm -rf /home/container/bin 2>/dev/null || true
 rm -rf /home/container/.local 2>/dev/null || true
 rm -rf /home/container/.config 2>/dev/null || true
 rm -rf /home/container/Content 2>/dev/null || true
 
 # Clean up installation artifacts
-echo "Cleaning up installation artifacts..."
 rm -f /home/container/Manifest_*.txt 2>/dev/null || true
 rm -f /home/container/PackageInfo.bin 2>/dev/null || true
 rm -f /home/container/SteamCMDInstall.sh 2>/dev/null || true
 
 # Create single user configuration file with all necessary settings (only if it doesn't exist)
 if [[ ! -f "/home/container/.arkmanager/config/arkmanager.cfg" ]]; then
-    echo "Creating initial arkmanager configuration..."
+    echo "Creating ARKManager configuration..."
     cat > /home/container/.arkmanager/config/arkmanager.cfg << 'EOF'
 # ===============================================================================
 # INSTANCE CONFIGURATION
@@ -250,9 +240,9 @@ EOF
 
     # Set proper ownership
     chown container:container /home/container/.arkmanager/config/arkmanager.cfg
-    echo "Initial arkmanager configuration created."
+    echo "ARKManager configuration created"
 else
-    echo "Using existing arkmanager configuration."
+    echo "Using existing ARKManager configuration"
 fi
 
 # Create symlink from old location to new config for compatibility
@@ -267,8 +257,6 @@ export ARKSERVERROOT="/home/container"
 
 # Clear any problematic environment variables that might cause path duplication
 unset ARK_SERVER_VOLUME 2>/dev/null || true
-
-echo "arkmanager configuration setup complete."
 
 # ===============================================================================
 # CRON SETUP
@@ -372,7 +360,6 @@ monitor_server_status() {
 # Start server status monitoring in background
 monitor_server_status &
 STATUS_MONITOR_PID=$!
-echo "Server status monitoring started (PID: ${STATUS_MONITOR_PID}) - will display status when server comes online"
 
 # ===============================================================================
 # STARTUP EXECUTION
