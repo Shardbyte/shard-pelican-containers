@@ -196,8 +196,21 @@ chown container:container /home/container/.arkmanager.cfg
 export arkserverroot="/home/container"
 export arkstUserCfgFileOverride="/home/container/.arkmanager.cfg"
 export arkSingleInstance="true"
+export arkserverdir="/home/container"
+export ARKSERVERROOT="/home/container"
 
 echo "arkmanager configuration setup complete."
+
+# Debug: Show arkmanager what it's working with
+echo "=== ARKMANAGER DEBUG INFO ==="
+echo "arkserverroot: ${arkserverroot}"
+echo "ARKSERVERROOT: ${ARKSERVERROOT}"
+echo "arkstUserCfgFileOverride: ${arkstUserCfgFileOverride}"
+echo "Config file exists: $(test -f /home/container/.arkmanager.cfg && echo 'YES' || echo 'NO')"
+echo "Server binary exists: $(test -f /home/container/ShooterGame/Binaries/Linux/ShooterGameServer && echo 'YES' || echo 'NO')"
+echo "Config directory exists: $(test -d /home/container/ShooterGame/Saved/Config/LinuxServer && echo 'YES' || echo 'NO')"
+echo "GameUserSettings.ini exists: $(test -f /home/container/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini && echo 'YES' || echo 'NO')"
+echo "============================="
 
 # ===============================================================================
 # SYMBOLIC LINKS SETUP
